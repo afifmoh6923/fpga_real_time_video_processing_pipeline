@@ -46,6 +46,8 @@
 
 module top (
     // ── Board clock ──────────────────────────────────────────────────────────
+    output logic [15:0] LED,
+
     input  logic        Clk,            // 100 MHz Urbana board oscillator
 
     // ── Reset (active-HIGH pushbutton on Urbana) ─────────────────────────────
@@ -69,8 +71,8 @@ module top (
     input  logic        cam_vsync,      // vertical sync   from camera
     input  logic        cam_href,       // horizontal ref  from camera
     input  logic [7:0]  cam_data,       // 8-bit pixel bus from camera
-    output logic        cam_reset_n,    // camera HW reset  (drive HIGH)
-    output logic        cam_pwdn,       // power-down       (drive LOW)
+    //output logic        cam_reset_n,    // camera HW reset  (drive HIGH)
+    //output logic        cam_pwdn,       // power-down       (drive LOW)
 
     // ── HDMI output ──────────────────────────────────────────────────────────
     output logic        hdmi_tmds_clk_n,
@@ -78,6 +80,13 @@ module top (
     output logic [2:0]  hdmi_tmds_data_n,
     output logic [2:0]  hdmi_tmds_data_p
 );
+logic clk_locked;
+
+    assign LED[1]  = cam_vsync;
+    assign LED[2]  = cam_href;
+    assign LED[3]  = fb_wr_en;
+    assign LED[5] = clk_locked;
+    assign LED[15] = config_done;
 
     // =========================================================================
     // INTERNAL SIGNALS
@@ -89,8 +98,8 @@ module top (
     logic cam_clk_int;    // ~24 MHz – OV7670 XCLK
 
     // Camera tie-offs
-    assign cam_reset_n = 1'b1;
-    assign cam_pwdn    = 1'b0;
+    //assign cam_reset_n = 1'b1;
+    //assign cam_pwdn    = 1'b0;
     assign cam_xclk    = cam_clk_int;
 
     // Switch synchronisation (pixel_clk domain)
@@ -139,7 +148,7 @@ module top (
         .clk_out2 (tmds_clk),
         .clk_out3 (cam_clk_int),
         .reset    (1'b0),
-        .locked   ()               // tie off or connect to downstream reset
+        .locked   (clk_locked)               // tie off or connect to downstream reset
     );
 
     // =========================================================================
@@ -268,26 +277,26 @@ module top (
     // Renders filter-name string at top-left corner.
     // Reuses font_rom.sv from the AXI lab (copy into project).
     // =========================================================================
-    text_overlay txt (
-        .pixel_clk   (pixel_clk),
-        .reset       (reset_btn),
-        .drawX       (drawX),
-        .drawY       (drawY),
-        .vs          (vs),
-        .SW          (sw_sync),
-        .video_in    (filtered_rgb),
-        .pixel_valid (filtered_valid),
-        .video_out   (overlaid_rgb),
-        .pvalid_out  (overlaid_valid)
-    );
+//    text_overlay txt (
+//        .pixel_clk   (pixel_clk),
+//        .reset       (reset_btn),
+//        .drawX       (drawX),
+//        .drawY       (drawY),
+//        .vs          (vs),
+//        .SW          (sw_sync),
+//        .video_in    (filtered_rgb),
+//        .pixel_valid (filtered_valid),
+//        .video_out   (overlaid_rgb),
+//        .pvalid_out  (overlaid_valid)
+//    );
 
     // =========================================================================
     // COLOR MAPPER  (color_mapper.sv)
     // 24-bit RGB888 → 4-bit per channel for Real Digital HDMI IP.
     // =========================================================================
     color_mapper cm (
-        .filtered_rgb (overlaid_rgb),
-        .pixel_valid  (overlaid_valid),
+        .filtered_rgb (filtered_rgb),
+        .pixel_valid  (filtered_valid),
         .red          (hdmi_r),
         .green        (hdmi_g),
         .blue         (hdmi_b),
@@ -315,10 +324,10 @@ module top (
         .aux1_din       (4'h0),
         .aux2_din       (4'h0),
         .ade            (1'b0),
-        .hdmi_tx_p      (hdmi_tmds_data_p),
-        .hdmi_tx_n      (hdmi_tmds_data_n),
-        .hdmi_clk_p     (hdmi_tmds_clk_p),
-        .hdmi_clk_n     (hdmi_tmds_clk_n)
+        .TMDS_CLK_P     (hdmi_tmds_clk_p),
+        .TMDS_CLK_N     (hdmi_tmds_clk_n),
+        .TMDS_DATA_P    (hdmi_tmds_data_p),
+        .TMDS_DATA_N    (hdmi_tmds_data_n)
     );
 
 endmodule

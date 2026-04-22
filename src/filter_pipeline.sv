@@ -117,7 +117,7 @@ module filter_pipeline (
     //     7: Black   (000000)
     logic [23:0] test_pattern;
     always_comb begin
-        case (drawX[9:7])
+        case (drawX/80)
             3'd0: test_pattern = 24'hFFFFFF;
             3'd1: test_pattern = 24'hFFFF00;
             3'd2: test_pattern = 24'h00FFFF;
@@ -132,7 +132,7 @@ module filter_pipeline (
 
     // Source pixel: test pattern or live camera
     logic [23:0] source_rgb;
-    assign source_rgb = SW[15] ? test_pattern : rgb888;
+    assign source_rgb = SW[15] ? (active_nblank ? test_pattern : 24'h000000) : rgb888;
 
     // pixel_valid: active video indicator
     logic pixel_valid;
@@ -165,7 +165,7 @@ module filter_pipeline (
     logic [23:0] s3_out; logic s3_valid;
     grayscale s3 (
         .clk        (pixel_clk),  .reset      (reset),
-        .enable     (SW[0]),
+        .enable     (1'b0),
         .pixel_valid(s2_valid),   .rgb_in     (s2_out),
         .rgb_out    (s3_out),     .pvalid_out (s3_valid)
     );
