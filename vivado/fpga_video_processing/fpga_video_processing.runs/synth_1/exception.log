@@ -1,4 +1,0 @@
-ERROR: Exception caught trying to open file C:\Users\patsn\OneDrive\Documents\fpga-projects\fpga_real_time_video_processing_pipeline\vivado\fpga_video_processing\fpga_video_processing.runs\synth_1/runme.log
-	Exception name: Error
-	Exception error code: 70
-	Exception message: Permission denied

@@ -132,7 +132,7 @@ logic clk_locked;
 
     // config_done from ov7670_init (unused in logic but useful for debug LED)
     logic        config_done;
-
+    assign LED[14:7] = cam_data;   // show raw camera data on LEDs
     // =========================================================================
     // CLOCK WIZARD  (Vivado IP – configure before synthesising)
     // Outputs:  clk_out1 = 25 MHz,  clk_out2 = 125 MHz,  clk_out3 = 24 MHz

@@ -242,6 +242,7 @@ module ov7670_init (
     logic [7:0]   sccb_reg_addr;
     logic [7:0]   sccb_reg_data;
     logic         sccb_done;
+    logic sccb_started;
 
     // =========================================================================
     // PSEUDO-CODE:
@@ -278,6 +279,7 @@ module ov7670_init (
             rom_idx     <= '0;
             sccb_start  <= 1'b0;
             config_done <= 1'b0;
+            sccb_started <= 1'b0;
         end else begin
             sccb_start <= 1'b0;  // default: no transaction
 
@@ -294,12 +296,16 @@ module ov7670_init (
 
                 SW_RESET: begin
                     // IMPLEMENT: send {0x12, 0x80}, wait for sccb_done
-                    sccb_reg_addr <= 8'h12;
-                    sccb_reg_data <= 8'h80;
-                    sccb_start    <= 1'b1;
+                    if (!sccb_started) begin
+                        sccb_reg_addr <= 8'h12;
+                        sccb_reg_data <= 8'h80;
+                        sccb_start    <= 1'b1;
+                        sccb_started  <= 1'b1;
+                    end
                     if (sccb_done) begin
-                        delay_cnt <= '0;
-                        state     <= RST_WAIT;
+                        sccb_started <= 1'b0;
+                        delay_cnt    <= '0;
+                        state        <= RST_WAIT;
                     end
                 end
 
@@ -318,14 +324,16 @@ module ov7670_init (
                     // IMPLEMENT: check sentinel, extract reg/data, trigger SCCB
                     if (rom[rom_idx] == 16'hFFFF) begin
                         state <= CONFIG_DONE;
-                    end else begin
+                    end else if (!sccb_started) begin
                         sccb_reg_addr <= rom[rom_idx][15:8];
                         sccb_reg_data <= rom[rom_idx][7:0];
                         sccb_start    <= 1'b1;
-                        if (sccb_done) begin
-                            delay_cnt <= '0;
-                            state     <= REG_WAIT;
-                        end
+                        sccb_started  <= 1'b1;
+                    end
+                    if (sccb_done) begin
+                        sccb_started <= 1'b0;
+                        delay_cnt    <= '0;
+                        state        <= REG_WAIT;
                     end
                 end
 

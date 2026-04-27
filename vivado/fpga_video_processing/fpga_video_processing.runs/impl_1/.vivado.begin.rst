@@ -1,45 +1,10 @@
 <?xml version="1.0"?>
 <ProcessHandle Version="1" Minor="0">
-    <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="24304" HostCore="16" HostMemory="016312553472">
+    <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="38708" HostCore="16" HostMemory="016312553472">
     </Process>
 </ProcessHandle>
 <?xml version="1.0"?>
 <ProcessHandle Version="1" Minor="0">
-    <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="14892" HostCore="16" HostMemory="016312553472">
-    </Process>
-</ProcessHandle>
-<?xml version="1.0"?>
-<ProcessHandle Version="1" Minor="0">
-    <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="35940" HostCore="16" HostMemory="016312553472">
-    </Process>
-</ProcessHandle>
-<?xml version="1.0"?>
-<ProcessHandle Version="1" Minor="0">
-    <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="32500" HostCore="16" HostMemory="016312553472">
-    </Process>
-</ProcessHandle>
-<?xml version="1.0"?>
-<ProcessHandle Version="1" Minor="0">
-    <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="27588" HostCore="16" HostMemory="016312553472">
-    </Process>
-</ProcessHandle>
-<?xml version="1.0"?>
-<ProcessHandle Version="1" Minor="0">
-    <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="33968" HostCore="16" HostMemory="016312553472">
-    </Process>
-</ProcessHandle>
-<?xml version="1.0"?>
-<ProcessHandle Version="1" Minor="0">
-    <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="32276" HostCore="16" HostMemory="016312553472">
-    </Process>
-</ProcessHandle>
-<?xml version="1.0"?>
-<ProcessHandle Version="1" Minor="0">
-    <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="33664" HostCore="16" HostMemory="016312553472">
-    </Process>
-</ProcessHandle>
-<?xml version="1.0"?>
-<ProcessHandle Version="1" Minor="0">
-    <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="15292" HostCore="16" HostMemory="016312553472">
+    <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="47644" HostCore="16" HostMemory="016312553472">
     </Process>
 </ProcessHandle>
