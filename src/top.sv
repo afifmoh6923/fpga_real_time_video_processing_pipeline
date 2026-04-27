@@ -174,7 +174,7 @@ logic clk_locked;
     // =========================================================================
     ov7670_init cam_init (
         .clk         (cam_clk_int),
-        .reset_n     (~reset_btn),
+        .reset_n     (~reset_btn & clk_locked),
         .sioc        (cam_sioc),
         .siod        (cam_siod),
         .config_done (config_done)
@@ -219,8 +219,8 @@ logic clk_locked;
 
     logic [8:0] cam_rd_x;
     logic [7:0] cam_rd_y;
-    assign cam_rd_x = drawX_d[9:1];         // divide display X by 2
-    assign cam_rd_y = drawY_d[8:1];         // divide display Y by 2
+    assign cam_rd_x = drawX[9:1];         // divide display X by 2
+    assign cam_rd_y = drawY[8:1];         // divide display Y by 2
 
     // 320 = 256 + 64 = (1 << 8) + (1 << 6)
     assign fb_rd_addr = ({9'b0, cam_rd_y} << 8)
@@ -312,7 +312,7 @@ logic clk_locked;
     hdmi_tx_0 hdmi_inst (
         .pix_clk        (pixel_clk),
         .pix_clkx5      (tmds_clk),
-        .pix_clk_locked (1'b1),        // assume locked after clk_wiz stabilises
+        .pix_clk_locked (clk_locked),        // assume locked after clk_wiz stabilises
         .rst            (reset_btn),
         .red            (hdmi_r),
         .green          (hdmi_g),

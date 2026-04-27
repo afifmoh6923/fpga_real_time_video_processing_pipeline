@@ -1,7 +1,7 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2025.1 (win64) Build 6140274 Thu May 22 00:12:29 MDT 2025
-| Date             : Sat Apr 25 23:10:46 2026
+| Date             : Mon Apr 27 13:52:05 2026
 | Host             : afiflaptop running 64-bit major release  (build 9200)
 | Command          : report_power -file top_power_routed.rpt -pb top_power_summary_routed.pb -rpx top_power_routed.rpx
 | Design           : top
@@ -53,16 +53,16 @@ Table of Contents
 | On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
 +--------------------------+-----------+----------+-----------+-----------------+
 | Clocks                   |     0.003 |       13 |       --- |             --- |
-| Slice Logic              |    <0.001 |     4030 |       --- |             --- |
-|   LUT as Logic           |    <0.001 |     1362 |     32600 |            4.18 |
+| Slice Logic              |     0.001 |     4062 |       --- |             --- |
+|   LUT as Logic           |    <0.001 |     1385 |     32600 |            4.25 |
 |   LUT as Distributed RAM |    <0.001 |      800 |      9600 |            8.33 |
-|   Register               |    <0.001 |     1099 |     65200 |            1.69 |
-|   CARRY4                 |    <0.001 |      112 |      8150 |            1.37 |
+|   Register               |    <0.001 |     1091 |     65200 |            1.67 |
+|   CARRY4                 |    <0.001 |      116 |      8150 |            1.42 |
 |   LUT as Shift Register  |    <0.001 |       16 |      9600 |            0.17 |
-|   F7/F8 Muxes            |    <0.001 |       35 |     32600 |            0.11 |
-|   Others                 |     0.000 |      164 |       --- |             --- |
-| Signals                  |     0.001 |     3356 |       --- |             --- |
-| Block RAM                |     0.005 |       36 |        75 |           48.00 |
+|   F7/F8 Muxes            |    <0.001 |       34 |     32600 |            0.10 |
+|   Others                 |     0.000 |      165 |       --- |             --- |
+| Signals                  |     0.001 |     3401 |       --- |             --- |
+| Block RAM                |     0.006 |       36 |        75 |           48.00 |
 | MMCM                     |     0.097 |        1 |         5 |           20.00 |
 | DSPs                     |    <0.001 |        3 |       120 |            2.50 |
 | I/O                      |     0.135 |       49 |       210 |           23.33 |
