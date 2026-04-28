@@ -43,9 +43,9 @@ module ov7670_init (
     // =========================================================================
     // TIMING PARAMETERS
     // =========================================================================
-    localparam PWRUP_DELAY = 1_200_000;   // ~50 ms at 24 MHz
+    localparam PWRUP_DELAY = 12_000_000;   // ~50 ms at 24 MHz
     localparam RESET_DELAY =    48_000;   // ~2 ms  at 24 MHz
-    localparam REG_DELAY   =    24_000;   // ~1 ms  at 24 MHz
+    localparam REG_DELAY   =    72_000;   // ~1 ms  at 24 MHz
 
     // =========================================================================
     // REGISTER TABLE  (ROM)
@@ -148,12 +148,12 @@ module ov7670_init (
         rom[0]  = 16'h1280;   // COM7: software reset
         rom[1]  = 16'h1204;   // COM7: RGB, QVGA
         rom[2]  = 16'h1100;   // CLKRC: no pre-scaler
-        rom[3]  = 16'h0C00;   // COM3: enable scale
-        rom[4]  = 16'h3E00;   // COM14: normal PCLK
+        rom[3]  = 16'h0C04;   // COM3: enable scale
+        rom[4]  = 16'h3E1A;   // COM14: normal PCLK
         rom[5]  = 16'h703A;   // SCALING_XSC
         rom[6]  = 16'h7135;   // SCALING_YSC
         rom[7]  = 16'h7211;   // SCALING_DCWCTR  (/2 H and V)
-        rom[8]  = 16'h73F0;   // SCALING_PCLK_DIV
+        rom[8]  = 16'h73F1;   // SCALING_PCLK_DIV
         rom[9]  = 16'hA202;   // SCALING_PCLK_DELAY
         rom[10] = 16'h1500;   // COM10: PCLK free-running
         rom[11] = 16'h40D0;   // COM15: RGB565 [00..FF]
@@ -230,6 +230,8 @@ module ov7670_init (
         PWRUP,      // wait for camera power-up stabilisation
         SW_RESET,   // send register 0x12 = 0x80 (software reset)
         RST_WAIT,   // wait after software reset
+        SW_RESET2,  
+        RST_WAIT2,
         SEND_REG,   // send next register from ROM
         REG_WAIT,   // inter-register delay
         CONFIG_DONE // done – stay here
@@ -310,14 +312,34 @@ module ov7670_init (
                 end
 
                 RST_WAIT: begin
-                    // IMPLEMENT: count RESET_DELAY then start sending registers
                     if (delay_cnt == RESET_DELAY - 1) begin
                         delay_cnt <= '0;
-                        rom_idx   <= 7'd1;    // index 0 was the reset command
-                        state     <= SEND_REG;
-                    end else begin
+                        state     <= SW_RESET2;   // ← changed
+                    end else
                         delay_cnt <= delay_cnt + 1;
+                end
+
+                SW_RESET2: begin
+                    if (!sccb_started) begin
+                        sccb_reg_addr <= 8'h12;
+                        sccb_reg_data <= 8'h80;
+                        sccb_start    <= 1'b1;
+                        sccb_started  <= 1'b1;
                     end
+                    if (sccb_done) begin
+                        sccb_started <= 1'b0;
+                        delay_cnt    <= '0;
+                        state        <= RST_WAIT2;
+                    end
+                end
+
+                RST_WAIT2: begin
+                    if (delay_cnt == RESET_DELAY - 1) begin
+                        delay_cnt <= '0;
+                        rom_idx   <= 7'd1;
+                        state     <= SEND_REG;
+                    end else
+                        delay_cnt <= delay_cnt + 1;
                 end
 
                 SEND_REG: begin

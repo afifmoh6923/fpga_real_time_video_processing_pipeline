@@ -167,6 +167,19 @@ logic clk_locked;
         end
     endgenerate
 
+    logic [23:0] init_delay;
+    logic        init_ready;
+    always_ff @(posedge cam_clk_int) begin
+        if (!clk_locked) begin
+            init_delay <= 0;
+            init_ready <= 0;
+        end else if (!init_ready) begin
+            if (init_delay == 24'd16_000_000)  // ~667ms after lock
+                init_ready <= 1;
+            else
+                init_delay <= init_delay + 1;
+        end
+    end
     // =========================================================================
     // CAMERA INIT  (ov7670_init.sv)
     // Sends ~70 SCCB register writes on power-up then asserts config_done.
@@ -174,7 +187,7 @@ logic clk_locked;
     // =========================================================================
     ov7670_init cam_init (
         .clk         (cam_clk_int),
-        .reset_n     (~reset_btn & clk_locked),
+        .reset_n     (init_ready & ~reset_btn),   // hold camera in reset until init logic is ready 
         .sioc        (cam_sioc),
         .siod        (cam_siod),
         .config_done (config_done)
@@ -217,15 +230,11 @@ logic clk_locked;
         drawY_d <= drawY;
     end
 
-    logic [8:0] cam_rd_x;
-    logic [7:0] cam_rd_y;
-    assign cam_rd_x = drawX[9:1];         // divide display X by 2
-    assign cam_rd_y = drawY[8:1];         // divide display Y by 2
-
-    // 320 = 256 + 64 = (1 << 8) + (1 << 6)
-    assign fb_rd_addr = ({9'b0, cam_rd_y} << 8)
-                      + ({9'b0, cam_rd_y} << 6)
-                      + {8'b0, cam_rd_x};
+    always_ff @(posedge pixel_clk) begin
+        fb_rd_addr <= (({9'b0, drawY[8:1]} << 8)
+                +  ({9'b0, drawY[8:1]} << 6)
+                +  {8'b0, drawX[9:1]});
+    end
 
     blk_mem_gen_0 frame_buffer (
         // Write port – camera clock domain
