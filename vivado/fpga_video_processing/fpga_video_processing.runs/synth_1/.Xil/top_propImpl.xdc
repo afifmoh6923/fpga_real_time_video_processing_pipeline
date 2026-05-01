@@ -80,21 +80,21 @@ set_property -dict {PACKAGE_PIN J15 IOSTANDARD LVCMOS33} [get_ports cam_sioc]
 set_property src_info {type:XDC file:1 line:104 export:INPUT save:INPUT read:READ} [current_design]
 set_property -dict {PACKAGE_PIN H17 IOSTANDARD LVCMOS33} [get_ports cam_siod]
 set_property src_info {type:XDC file:1 line:132 export:INPUT save:INPUT read:READ} [current_design]
-set_property -dict {PACKAGE_PIN F14 IOSTANDARD LVCMOS33} [get_ports {cam_data[0]}] ;# Pin 1
+set_property -dict {PACKAGE_PIN F14 IOSTANDARD LVCMOS33} [get_ports {cam_data[0]}] ;# Physical Pin 1
 set_property src_info {type:XDC file:1 line:133 export:INPUT save:INPUT read:READ} [current_design]
-set_property -dict {PACKAGE_PIN H13 IOSTANDARD LVCMOS33} [get_ports {cam_data[1]}] ;# Pin 2
+set_property -dict {PACKAGE_PIN J13 IOSTANDARD LVCMOS33} [get_ports {cam_data[1]}] ;# Physical Pin 2
 set_property src_info {type:XDC file:1 line:134 export:INPUT save:INPUT read:READ} [current_design]
-set_property -dict {PACKAGE_PIN J13 IOSTANDARD LVCMOS33} [get_ports {cam_data[2]}] ;# Pin 3
+set_property -dict {PACKAGE_PIN F15 IOSTANDARD LVCMOS33} [get_ports {cam_data[2]}] ;# Physical Pin 3
 set_property src_info {type:XDC file:1 line:135 export:INPUT save:INPUT read:READ} [current_design]
-set_property -dict {PACKAGE_PIN E14 IOSTANDARD LVCMOS33} [get_ports {cam_data[3]}] ;# Pin 4
+set_property -dict {PACKAGE_PIN J14 IOSTANDARD LVCMOS33} [get_ports {cam_data[3]}] ;# Physical Pin 4
 set_property src_info {type:XDC file:1 line:136 export:INPUT save:INPUT read:READ} [current_design]
-set_property -dict {PACKAGE_PIN F15 IOSTANDARD LVCMOS33} [get_ports {cam_data[4]}] ;# Pin 7
+set_property -dict {PACKAGE_PIN H13 IOSTANDARD LVCMOS33} [get_ports {cam_data[4]}] ;# Physical Pin 7
 set_property src_info {type:XDC file:1 line:137 export:INPUT save:INPUT read:READ} [current_design]
-set_property -dict {PACKAGE_PIN H14 IOSTANDARD LVCMOS33} [get_ports {cam_data[5]}] ;# Pin 8
+set_property -dict {PACKAGE_PIN E14 IOSTANDARD LVCMOS33} [get_ports {cam_data[5]}] ;# Physical Pin 8
 set_property src_info {type:XDC file:1 line:138 export:INPUT save:INPUT read:READ} [current_design]
-set_property -dict {PACKAGE_PIN J14 IOSTANDARD LVCMOS33} [get_ports {cam_data[6]}] ;# Pin 9
+set_property -dict {PACKAGE_PIN H14 IOSTANDARD LVCMOS33} [get_ports {cam_data[6]}] ;# Physical Pin 9
 set_property src_info {type:XDC file:1 line:139 export:INPUT save:INPUT read:READ} [current_design]
-set_property -dict {PACKAGE_PIN E15 IOSTANDARD LVCMOS33} [get_ports {cam_data[7]}] ;# Pin 10
+set_property -dict {PACKAGE_PIN E15 IOSTANDARD LVCMOS33} [get_ports {cam_data[7]}] ;# Physical Pin 10
 set_property src_info {type:XDC file:1 line:157 export:INPUT save:INPUT read:READ} [current_design]
 set_property -dict {PACKAGE_PIN U17 IOSTANDARD TMDS_33} [get_ports {hdmi_tmds_data_p[0]}]
 set_property src_info {type:XDC file:1 line:158 export:INPUT save:INPUT read:READ} [current_design]

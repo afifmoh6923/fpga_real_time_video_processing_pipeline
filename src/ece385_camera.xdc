@@ -129,14 +129,14 @@ create_clock -add -name cam_pclk_clk \
 #   D6 -> JA2_N  H14  PmodA Pin 9
 #   D7 -> JA4_N  E15  PmodA Pin 10
 ###############################################################################
-set_property -dict {PACKAGE_PIN F14 IOSTANDARD LVCMOS33} [get_ports {cam_data[0]}] ;# Pin 1
-set_property -dict {PACKAGE_PIN H13 IOSTANDARD LVCMOS33} [get_ports {cam_data[1]}] ;# Pin 2
-set_property -dict {PACKAGE_PIN J13 IOSTANDARD LVCMOS33} [get_ports {cam_data[2]}] ;# Pin 3
-set_property -dict {PACKAGE_PIN E14 IOSTANDARD LVCMOS33} [get_ports {cam_data[3]}] ;# Pin 4
-set_property -dict {PACKAGE_PIN F15 IOSTANDARD LVCMOS33} [get_ports {cam_data[4]}] ;# Pin 7
-set_property -dict {PACKAGE_PIN H14 IOSTANDARD LVCMOS33} [get_ports {cam_data[5]}] ;# Pin 8
-set_property -dict {PACKAGE_PIN J14 IOSTANDARD LVCMOS33} [get_ports {cam_data[6]}] ;# Pin 9
-set_property -dict {PACKAGE_PIN E15 IOSTANDARD LVCMOS33} [get_ports {cam_data[7]}] ;# Pin 10
+set_property -dict {PACKAGE_PIN F14 IOSTANDARD LVCMOS33} [get_ports {cam_data[0]}] ;# Physical Pin 1
+set_property -dict {PACKAGE_PIN J13 IOSTANDARD LVCMOS33} [get_ports {cam_data[1]}] ;# Physical Pin 2
+set_property -dict {PACKAGE_PIN F15 IOSTANDARD LVCMOS33} [get_ports {cam_data[2]}] ;# Physical Pin 3
+set_property -dict {PACKAGE_PIN J14 IOSTANDARD LVCMOS33} [get_ports {cam_data[3]}] ;# Physical Pin 4
+set_property -dict {PACKAGE_PIN H13 IOSTANDARD LVCMOS33} [get_ports {cam_data[4]}] ;# Physical Pin 7
+set_property -dict {PACKAGE_PIN E14 IOSTANDARD LVCMOS33} [get_ports {cam_data[5]}] ;# Physical Pin 8
+set_property -dict {PACKAGE_PIN H14 IOSTANDARD LVCMOS33} [get_ports {cam_data[6]}] ;# Physical Pin 9
+set_property -dict {PACKAGE_PIN E15 IOSTANDARD LVCMOS33} [get_ports {cam_data[7]}] ;# Physical Pin 10
 
 
 ###############################################################################

@@ -1,6 +1,7 @@
+
 ///////////////////////////////////////////////////////////////////////////////
 // ov7670_init.sv
-// ECE 385 Final Project – Real-Time FPGA Video Processing Pipeline
+// ECE 385 Final Project - Real-Time FPGA Video Processing Pipeline
 //
 // OV7670 CAMERA CONFIGURATION SEQUENCER
 // ─────────────────────────────────────────────────────────────────────────────
@@ -144,7 +145,7 @@ module ov7670_init (
 
     // Initialise ROM  (synthesises as LUT/BRAM-based ROM in Vivado)
     initial begin
-        // Software reset – handled separately in state machine, still placed here
+        // Software reset - handled separately in state machine, still placed here
         rom[0]  = 16'h1280;   // COM7: software reset
         rom[1]  = 16'h1204;   // COM7: RGB, QVGA
         rom[2]  = 16'h1100;   // CLKRC: no pre-scaler
@@ -234,7 +235,7 @@ module ov7670_init (
         RST_WAIT2,
         SEND_REG,   // send next register from ROM
         REG_WAIT,   // inter-register delay
-        CONFIG_DONE // done – stay here
+        CONFIG_DONE // done - stay here
     } init_state_t;
 
     init_state_t  state;
@@ -394,3 +395,4 @@ module ov7670_init (
     );
 
 endmodule
+
