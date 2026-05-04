@@ -34,6 +34,7 @@ module ov7670_capture (
         // Resetting byte_sel here ensures we always start the next line on Byte 0.
         end else if (!cam_href) begin
             byte_sel <= 1'b0;
+            col <= 9'd0;
 
         // 3. Process Active Data
         end else begin

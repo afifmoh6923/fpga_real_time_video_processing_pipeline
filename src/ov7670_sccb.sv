@@ -31,7 +31,7 @@ module ov7670_sccb (
     inout  wire  siod
 );
 
-    localparam HALF_PERIOD = 1200;   // 24 MHz / 10 kHz / 2
+    localparam HALF_PERIOD = 120;   // 24 MHz / 100 kHz / 2
 
     typedef enum logic [3:0] {
         IDLE,

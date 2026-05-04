@@ -147,17 +147,17 @@ module ov7670_init (
     initial begin
         // Software reset - handled separately in state machine, still placed here
         rom[0]  = 16'h1280;   // COM7: software reset
-        rom[1]  = 16'h1204;   // COM7: RGB, QVGA
+        rom[1]  = 16'h1214;   // COM7: RGB, QVGA
         rom[2]  = 16'h1100;   // CLKRC: no pre-scaler
         rom[3]  = 16'h0C04;   // COM3: enable scale
-        rom[4]  = 16'h3E1A;   // COM14: normal PCLK
+        rom[4]  = 16'h3E19;   // COM14: normal PCLK
         rom[5]  = 16'h703A;   // SCALING_XSC
         rom[6]  = 16'h7135;   // SCALING_YSC
         rom[7]  = 16'h7211;   // SCALING_DCWCTR  (/2 H and V)
         rom[8]  = 16'h73F1;   // SCALING_PCLK_DIV
         rom[9]  = 16'hA202;   // SCALING_PCLK_DELAY
         rom[10] = 16'h1500;   // COM10: PCLK free-running
-        rom[11] = 16'h40D0;   // COM15: RGB565 [00..FF]
+        rom[11] = 16'h40E0;   // COM15: RGB565 [00..FF]
         rom[12] = 16'h4108;   // COM16
         rom[13] = 16'h4202;   // COM17
         rom[14] = 16'h1E00;   // MVFP: no mirror/flip
