@@ -3,8 +3,8 @@
 # SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
 # IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
 # SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
-# Start of session at: Mon May  4 22:01:14 2026
-# Process ID         : 10436
+# Start of session at: Tue May  5 07:35:33 2026
+# Process ID         : 36840
 # Current directory  : C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1
 # Command line       : vivado.exe -log top.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source top.tcl
 # Log file           : C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1/top.vds
@@ -19,10 +19,10 @@
 # Host memory        : 16312 MB
 # Swap memory        : 21474 MB
 # Total Virtual      : 37787 MB
-# Available Virtual  : 13798 MB
+# Available Virtual  : 11889 MB
 #-----------------------------------------------------------
 source top.tcl -notrace
-create_project: Time (s): cpu = 00:00:19 ; elapsed = 00:00:13 . Memory (MB): peak = 540.680 ; gain = 246.598
+create_project: Time (s): cpu = 00:00:18 ; elapsed = 00:00:13 . Memory (MB): peak = 542.605 ; gain = 248.414
 INFO: [IP_Flow 19-234] Refreshing IP repositories
 INFO: [IP_Flow 19-1700] Loaded user IP repository 'c:/Users/patsn/Downloads/RD_hdmi_ip2020'.
 INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/Xilinx/2025.1/Vivado/data/ip'.
@@ -40,26 +40,26 @@ INFO: [Designutils 20-5440] No compile time benefit to using incremental synthes
 INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
 INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
 INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
-INFO: [Synth 8-7075] Helper process launched with PID 38600
+INFO: [Synth 8-7075] Helper process launched with PID 44276
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:11 ; elapsed = 00:00:13 . Memory (MB): peak = 1218.082 ; gain = 492.629
+Starting RTL Elaboration : Time (s): cpu = 00:00:11 ; elapsed = 00:00:12 . Memory (MB): peak = 1221.398 ; gain = 494.703
 ---------------------------------------------------------------------------------
 WARNING: [Synth 8-6901] identifier 'fb_wr_en' is used before its declaration [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/top.sv:87]
 WARNING: [Synth 8-6901] identifier 'config_done' is used before its declaration [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/top.sv:89]
 INFO: [Synth 8-6157] synthesizing module 'top' [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/top.sv:47]
 INFO: [Synth 8-6157] synthesizing module 'sync_flop' [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/sync.sv:39]
 INFO: [Synth 8-6155] done synthesizing module 'sync_flop' (0#1) [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/sync.sv:39]
-INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1/.Xil/Vivado-10436-afiflaptop/realtime/clk_wiz_0_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (0#1) [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1/.Xil/Vivado-10436-afiflaptop/realtime/clk_wiz_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1/.Xil/Vivado-36840-afiflaptop/realtime/clk_wiz_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (0#1) [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1/.Xil/Vivado-36840-afiflaptop/realtime/clk_wiz_0_stub.v:6]
 INFO: [Synth 8-6157] synthesizing module 'ov7670_init' [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/ov7670_init.sv:33]
-INFO: [Synth 8-226] default block is never used [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/ov7670_init.sv:289]
+INFO: [Synth 8-226] default block is never used [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/ov7670_init.sv:297]
 INFO: [Synth 8-6157] synthesizing module 'ov7670_sccb' [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/ov7670_sccb.sv:21]
 INFO: [Synth 8-6155] done synthesizing module 'ov7670_sccb' (0#1) [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/ov7670_sccb.sv:21]
 INFO: [Synth 8-6155] done synthesizing module 'ov7670_init' (0#1) [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/ov7670_init.sv:33]
 INFO: [Synth 8-6157] synthesizing module 'ov7670_capture' [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/ov7670_capture.sv:6]
 INFO: [Synth 8-6155] done synthesizing module 'ov7670_capture' (0#1) [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/ov7670_capture.sv:6]
-INFO: [Synth 8-6157] synthesizing module 'blk_mem_gen_0' [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1/.Xil/Vivado-10436-afiflaptop/realtime/blk_mem_gen_0_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'blk_mem_gen_0' (0#1) [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1/.Xil/Vivado-10436-afiflaptop/realtime/blk_mem_gen_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'blk_mem_gen_0' [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1/.Xil/Vivado-36840-afiflaptop/realtime/blk_mem_gen_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'blk_mem_gen_0' (0#1) [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1/.Xil/Vivado-36840-afiflaptop/realtime/blk_mem_gen_0_stub.v:6]
 INFO: [Synth 8-6157] synthesizing module 'vga_controller' [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/VGA_controller.sv:26]
 INFO: [Synth 8-6155] done synthesizing module 'vga_controller' (0#1) [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/VGA_controller.sv:26]
 INFO: [Synth 8-6157] synthesizing module 'filter_pipeline' [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/filter_pipeline.sv:46]
@@ -82,11 +82,11 @@ INFO: [Synth 8-6155] done synthesizing module 'edge_detect' (0#1) [C:/Users/pats
 INFO: [Synth 8-6155] done synthesizing module 'filter_pipeline' (0#1) [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/filter_pipeline.sv:46]
 INFO: [Synth 8-6157] synthesizing module 'color_mapper' [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/color_mapper.sv:2]
 INFO: [Synth 8-6155] done synthesizing module 'color_mapper' (0#1) [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/color_mapper.sv:2]
-INFO: [Synth 8-6157] synthesizing module 'hdmi_tx_0' [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1/.Xil/Vivado-10436-afiflaptop/realtime/hdmi_tx_0_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'hdmi_tx_0' (0#1) [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1/.Xil/Vivado-10436-afiflaptop/realtime/hdmi_tx_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'hdmi_tx_0' [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1/.Xil/Vivado-36840-afiflaptop/realtime/hdmi_tx_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'hdmi_tx_0' (0#1) [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1/.Xil/Vivado-36840-afiflaptop/realtime/hdmi_tx_0_stub.v:6]
 INFO: [Synth 8-6155] done synthesizing module 'top' (0#1) [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/top.sv:47]
-WARNING: [Synth 8-7137] Register sccb_reg_addr_reg in module ov7670_init has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/ov7670_init.sv:303]
-WARNING: [Synth 8-7137] Register sccb_reg_data_reg in module ov7670_init has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/ov7670_init.sv:304]
+WARNING: [Synth 8-7137] Register sccb_reg_addr_reg in module ov7670_init has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/ov7670_init.sv:311]
+WARNING: [Synth 8-7137] Register sccb_reg_data_reg in module ov7670_init has both Set and reset with same priority. This may cause simulation mismatches. Consider rewriting code  [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/ov7670_init.sv:312]
 WARNING: [Synth 8-6014] Unused sequential element p_r0_reg[1] was removed.  [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/conv_filters.sv:55]
 WARNING: [Synth 8-6014] Unused sequential element p_r2_reg[1] was removed.  [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/conv_filters.sv:57]
 WARNING: [Synth 8-6014] Unused sequential element drawX_d_reg was removed.  [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/top.sv:229]
@@ -122,18 +122,18 @@ WARNING: [Synth 8-7129] Port LED[6] in module top is either unconnected or has n
 WARNING: [Synth 8-7129] Port LED[4] in module top is either unconnected or has no load
 WARNING: [Synth 8-7129] Port LED[0] in module top is either unconnected or has no load
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:15 ; elapsed = 00:00:17 . Memory (MB): peak = 1338.941 ; gain = 613.488
+Finished RTL Elaboration : Time (s): cpu = 00:00:14 ; elapsed = 00:00:15 . Memory (MB): peak = 1341.648 ; gain = 614.953
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:15 ; elapsed = 00:00:17 . Memory (MB): peak = 1338.941 ; gain = 613.488
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:14 ; elapsed = 00:00:16 . Memory (MB): peak = 1341.648 ; gain = 614.953
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:15 ; elapsed = 00:00:17 . Memory (MB): peak = 1338.941 ; gain = 613.488
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:14 ; elapsed = 00:00:16 . Memory (MB): peak = 1341.648 ; gain = 614.953
 ---------------------------------------------------------------------------------
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.039 . Memory (MB): peak = 1338.941 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.052 . Memory (MB): peak = 1341.648 ; gain = 0.000
 INFO: [Project 1-570] Preparing netlist for logic optimization
 
 Processing XDC Constraints
@@ -155,28 +155,28 @@ Parsing XDC File [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time
 Finished Parsing XDC File [C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1/dont_touch.xdc]
 Completed Processing XDC Constraints
 
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.002 . Memory (MB): peak = 1413.820 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.002 . Memory (MB): peak = 1390.703 ; gain = 0.000
 INFO: [Project 1-111] Unisim Transformation Summary:
 No Unisim elements were transformed.
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.019 . Memory (MB): peak = 1413.820 ; gain = 0.000
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.022 . Memory (MB): peak = 1390.703 ; gain = 0.000
 INFO: [Designutils 20-5440] No compile time benefit to using incremental synthesis; A full resynthesis will be run
 INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:29 ; elapsed = 00:00:32 . Memory (MB): peak = 1413.820 ; gain = 688.367
+Finished Constraint Validation : Time (s): cpu = 00:00:29 ; elapsed = 00:00:31 . Memory (MB): peak = 1390.703 ; gain = 664.008
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7s50csga324-1
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:29 ; elapsed = 00:00:32 . Memory (MB): peak = 1413.820 ; gain = 688.367
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:29 ; elapsed = 00:00:31 . Memory (MB): peak = 1390.703 ; gain = 664.008
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:29 ; elapsed = 00:00:32 . Memory (MB): peak = 1413.820 ; gain = 688.367
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:29 ; elapsed = 00:00:31 . Memory (MB): peak = 1390.703 ; gain = 664.008
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'ov7670_sccb'
 INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'ov7670_init'
@@ -198,7 +198,7 @@ INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'ov767
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'sequential' in module 'ov7670_sccb'
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:31 ; elapsed = 00:00:34 . Memory (MB): peak = 1413.820 ; gain = 688.367
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:30 ; elapsed = 00:00:33 . Memory (MB): peak = 1390.703 ; gain = 664.008
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start RTL Component Statistics 
@@ -225,7 +225,7 @@ Detailed RTL Component Info :
 	               17 Bit    Registers := 2     
 	               16 Bit    Registers := 2     
 	               10 Bit    Registers := 2     
-	                9 Bit    Registers := 1     
+	                9 Bit    Registers := 2     
 	                8 Bit    Registers := 10    
 	                7 Bit    Registers := 2     
 	                4 Bit    Registers := 1     
@@ -234,7 +234,7 @@ Detailed RTL Component Info :
 	               7K Bit	(320 X 24 bit)          RAMs := 6     
 +---Muxes : 
 	  12 Input   24 Bit        Muxes := 1     
-	   2 Input   24 Bit        Muxes := 17    
+	   2 Input   24 Bit        Muxes := 18    
 	   8 Input   21 Bit        Muxes := 1     
 	   2 Input   16 Bit        Muxes := 2     
 	  12 Input   16 Bit        Muxes := 1     
@@ -291,7 +291,7 @@ WARNING: [Synth 8-7129] Port LED[6] in module top is either unconnected or has n
 WARNING: [Synth 8-7129] Port LED[4] in module top is either unconnected or has no load
 WARNING: [Synth 8-7129] Port LED[0] in module top is either unconnected or has no load
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:44 ; elapsed = 00:00:48 . Memory (MB): peak = 1419.062 ; gain = 693.609
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:42 ; elapsed = 00:00:46 . Memory (MB): peak = 1426.871 ; gain = 700.176
 ---------------------------------------------------------------------------------
  Sort Area is  avg_B_raw0_3 : 0 0 : 212 212 : Used 1 time 0
  Sort Area is  avg_G_raw0_2 : 0 0 : 212 212 : Used 1 time 0
@@ -304,7 +304,7 @@ ROM: Preliminary Mapping Report
 +------------+------------+---------------+----------------+
 |Module Name | RTL Object | Depth x Width | Implemented As | 
 +------------+------------+---------------+----------------+
-|ov7670_init | rom        | 128x16        | LUT            | 
+|ov7670_init | message    | 128x16        | LUT            | 
 |ov7670_init | p_0_out    | 128x16        | LUT            | 
 +------------+------------+---------------+----------------+
 
@@ -340,13 +340,13 @@ Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
 Start Applying XDC Timing Constraints
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:55 ; elapsed = 00:01:00 . Memory (MB): peak = 1585.480 ; gain = 860.027
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:53 ; elapsed = 00:00:57 . Memory (MB): peak = 1593.297 ; gain = 866.602
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:00:57 ; elapsed = 00:01:01 . Memory (MB): peak = 1592.801 ; gain = 867.348
+Finished Timing Optimization : Time (s): cpu = 00:00:55 ; elapsed = 00:00:59 . Memory (MB): peak = 1600.805 ; gain = 874.109
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start ROM, RAM, DSP, Shift Register and Retiming Reporting
@@ -371,7 +371,7 @@ Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
 Start Technology Mapping
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:00:58 ; elapsed = 00:01:02 . Memory (MB): peak = 1621.418 ; gain = 895.965
+Finished Technology Mapping : Time (s): cpu = 00:00:57 ; elapsed = 00:01:01 . Memory (MB): peak = 1629.406 ; gain = 902.711
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start IO Insertion
@@ -389,37 +389,52 @@ Start Final Netlist Cleanup
 Finished Final Netlist Cleanup
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:01:04 ; elapsed = 00:01:09 . Memory (MB): peak = 1832.133 ; gain = 1106.680
+Finished IO Insertion : Time (s): cpu = 00:01:03 ; elapsed = 00:01:08 . Memory (MB): peak = 1840.766 ; gain = 1114.070
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:01:04 ; elapsed = 00:01:09 . Memory (MB): peak = 1832.133 ; gain = 1106.680
+Finished Renaming Generated Instances : Time (s): cpu = 00:01:03 ; elapsed = 00:01:08 . Memory (MB): peak = 1840.766 ; gain = 1114.070
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:01:04 ; elapsed = 00:01:09 . Memory (MB): peak = 1832.133 ; gain = 1106.680
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:01:04 ; elapsed = 00:01:09 . Memory (MB): peak = 1840.766 ; gain = 1114.070
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:01:04 ; elapsed = 00:01:09 . Memory (MB): peak = 1832.133 ; gain = 1106.680
+Finished Renaming Generated Ports : Time (s): cpu = 00:01:04 ; elapsed = 00:01:09 . Memory (MB): peak = 1840.766 ; gain = 1114.070
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:01:05 ; elapsed = 00:01:09 . Memory (MB): peak = 1832.133 ; gain = 1106.680
+Finished Handling Custom Attributes : Time (s): cpu = 00:01:04 ; elapsed = 00:01:09 . Memory (MB): peak = 1840.766 ; gain = 1114.070
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:01:05 ; elapsed = 00:01:09 . Memory (MB): peak = 1832.133 ; gain = 1106.680
+Finished Renaming Generated Nets : Time (s): cpu = 00:01:04 ; elapsed = 00:01:09 . Memory (MB): peak = 1840.766 ; gain = 1114.070
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+Static Shift Register Report:
++------------+--------------------------+--------+-------+--------------+--------------------+-------------------+--------+---------+
+|Module Name | RTL Name                 | Length | Width | Reset Signal | Pull out first Reg | Pull out last Reg | SRL16E | SRLC32E | 
++------------+--------------------------+--------+-------+--------------+--------------------+-------------------+--------+---------+
+|top         | fp/s6/pvalid_out_reg     | 12     | 1     | YES          | NO                 | YES               | 1      | 0       | 
+|top         | fp/in_window_pipe_reg[8] | 9      | 1     | YES          | NO                 | YES               | 1      | 0       | 
++------------+--------------------------+--------+-------+--------------+--------------------+-------------------+--------+---------+
+
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Writing Synthesis Report
@@ -454,44 +469,45 @@ Report Cell Usage:
 |4     |BUFG        |     1|
 |5     |CARRY4      |   123|
 |6     |DSP48E1     |     3|
-|7     |LUT1        |    34|
-|8     |LUT2        |   159|
-|9     |LUT3        |   404|
-|10    |LUT4        |   244|
-|11    |LUT5        |   268|
-|12    |LUT6        |   378|
+|7     |LUT1        |    35|
+|8     |LUT2        |   149|
+|9     |LUT3        |   416|
+|10    |LUT4        |   243|
+|11    |LUT5        |   267|
+|12    |LUT6        |   380|
 |13    |MUXF7       |    15|
 |14    |RAM64M      |   200|
-|15    |FDCE        |   112|
-|16    |FDPE        |     2|
-|17    |FDRE        |   909|
-|18    |IBUF        |    21|
-|19    |OBUF        |     7|
-|20    |OBUFT       |    12|
+|15    |SRL16E      |     2|
+|16    |FDCE        |   112|
+|17    |FDPE        |     2|
+|18    |FDRE        |   912|
+|19    |IBUF        |    21|
+|20    |OBUF        |     7|
+|21    |OBUFT       |    12|
 +------+------------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:01:05 ; elapsed = 00:01:09 . Memory (MB): peak = 1832.133 ; gain = 1106.680
+Finished Writing Synthesis Report : Time (s): cpu = 00:01:04 ; elapsed = 00:01:09 . Memory (MB): peak = 1840.766 ; gain = 1114.070
 ---------------------------------------------------------------------------------
 Synthesis finished with 0 errors, 0 critical warnings and 19 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:00:46 ; elapsed = 00:01:06 . Memory (MB): peak = 1832.133 ; gain = 1031.801
-Synthesis Optimization Complete : Time (s): cpu = 00:01:05 ; elapsed = 00:01:10 . Memory (MB): peak = 1832.133 ; gain = 1106.680
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:46 ; elapsed = 00:01:05 . Memory (MB): peak = 1840.766 ; gain = 1065.016
+Synthesis Optimization Complete : Time (s): cpu = 00:01:04 ; elapsed = 00:01:09 . Memory (MB): peak = 1840.766 ; gain = 1114.070
 INFO: [Project 1-571] Translating synthesized netlist
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.046 . Memory (MB): peak = 1841.320 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.048 . Memory (MB): peak = 1849.957 ; gain = 0.000
 INFO: [Netlist 29-17] Analyzing 341 Unisim elements for replacement
-INFO: [Netlist 29-28] Unisim Transformation completed in 1 CPU seconds
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
 INFO: [Project 1-570] Preparing netlist for logic optimization
 INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 1845.016 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.004 . Memory (MB): peak = 1853.684 ; gain = 0.000
 INFO: [Project 1-111] Unisim Transformation Summary:
   A total of 200 instances were transformed.
   RAM64M => RAM64M (RAMD64E(x4)): 200 instances
 
-Synth Design complete | Checksum: dd6a07b4
+Synth Design complete | Checksum: 9b3b4a54
 INFO: [Common 17-83] Releasing license: Synthesis
 64 Infos, 61 Warnings, 0 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:01:13 ; elapsed = 00:01:21 . Memory (MB): peak = 1845.016 ; gain = 1294.039
-Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.016 . Memory (MB): peak = 1845.016 ; gain = 0.000
+synth_design: Time (s): cpu = 00:01:11 ; elapsed = 00:01:20 . Memory (MB): peak = 1853.684 ; gain = 1300.070
+Write ShapeDB Complete: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.025 . Memory (MB): peak = 1853.684 ; gain = 0.000
 INFO: [Common 17-1381] The checkpoint 'C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/synth_1/top.dcp' has been generated.
 INFO: [Vivado 12-24828] Executing command : report_utilization -file top_utilization_synth.rpt -pb top_utilization_synth.pb
-INFO: [Common 17-206] Exiting Vivado at Mon May  4 22:02:57 2026...
+INFO: [Common 17-206] Exiting Vivado at Tue May  5 07:37:13 2026...

@@ -207,7 +207,18 @@ module filter_pipeline (
     // =========================================================================
     // STEP 5 – OUTPUT ASSIGNMENT
     // =========================================================================
-    assign filtered_rgb = s6_out;
+    logic [8:0] in_window_pipe;
+    
+    always_ff @(posedge pixel_clk) begin
+        if (reset) begin
+            in_window_pipe <= 9'b0;
+        end else begin
+            in_window_pipe <= {in_window_pipe[7:0], in_window};
+        end
+    end
+
+    // Force perfectly black pixels outside the window
+    assign filtered_rgb = in_window_pipe[8] ? s6_out : 24'h000000;
     assign pvalid_out   = s6_valid;
 
 endmodule

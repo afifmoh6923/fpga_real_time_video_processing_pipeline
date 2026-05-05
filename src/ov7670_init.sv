@@ -140,88 +140,96 @@ module ov7670_init (
     // NOTE: Index [0] (soft-reset 0x12=0x80) is sent first with RESET_DELAY
     //       before the remaining registers.  All others use REG_DELAY.
 
-    localparam ROM_DEPTH = 76;
-    logic [15:0] rom [0:ROM_DEPTH-1];
+    localparam ROM_DEPTH = 78;
+    logic [15:0] message [0:ROM_DEPTH-1];
 
     // Initialise ROM  (synthesises as LUT/BRAM-based ROM in Vivado)
     initial begin
         // Software reset - handled separately in state machine, still placed here
-        rom[0]  = 16'h1280;   // COM7: software reset
-        rom[1]  = 16'h1214;   // COM7: RGB, QVGA
-        rom[2]  = 16'h1100;   // CLKRC: no pre-scaler
-        rom[3]  = 16'h0C04;   // COM3: enable scale
-        rom[4]  = 16'h3E19;   // COM14: normal PCLK
-        rom[5]  = 16'h703A;   // SCALING_XSC
-        rom[6]  = 16'h7135;   // SCALING_YSC
-        rom[7]  = 16'h7211;   // SCALING_DCWCTR  (/2 H and V)
-        rom[8]  = 16'h73F1;   // SCALING_PCLK_DIV
-        rom[9]  = 16'hA202;   // SCALING_PCLK_DELAY
-        rom[10] = 16'h1520;   // COM10: PCLK free-running
-        rom[11] = 16'h40D0;   // COM15: RGB565 [00..FF]
-        rom[12] = 16'h4108;   // COM16
-        rom[13] = 16'h4202;   // COM17
-        rom[14] = 16'h1E00;   // MVFP: no mirror/flip
-        rom[15] = 16'h4F80;   // MTX1
-        rom[16] = 16'h5080;   // MTX2
-        rom[17] = 16'h5100;   // MTX3
-        rom[18] = 16'h5222;   // MTX4
-        rom[19] = 16'h535E;   // MTX5
-        rom[20] = 16'h5480;   // MTX6
-        rom[21] = 16'h589E;   // MTXS
-        rom[22] = 16'h7A20;   // SLOP
-        rom[23] = 16'h7B10;   // GAM1
-        rom[24] = 16'h7C1E;   // GAM2
-        rom[25] = 16'h7D35;   // GAM3
-        rom[26] = 16'h7E5A;   // GAM4
-        rom[27] = 16'h7F69;   // GAM5
-        rom[28] = 16'h8076;   // GAM6
-        rom[29] = 16'h8180;   // GAM7
-        rom[30] = 16'h8288;   // GAM8
-        rom[31] = 16'h838F;   // GAM9
-        rom[32] = 16'h8496;   // GAM10
-        rom[33] = 16'h85A3;   // GAM11
-        rom[34] = 16'h86AF;   // GAM12
-        rom[35] = 16'h87C4;   // GAM13
-        rom[36] = 16'h88D7;   // GAM14
-        rom[37] = 16'h89E8;   // GAM15
-        rom[38] = 16'h13E0;   // COM8: AWB on, AEC/AGC off
-        rom[39] = 16'h0000;   // GAIN
-        rom[40] = 16'h1000;   // AECH
-        rom[41] = 16'h0D40;   // COM4
-        rom[42] = 16'h1418;   // COM9: max gain 4x
-        rom[43] = 16'hA505;   // BD50MAX
-        rom[44] = 16'hAB07;   // BD60MAX
-        rom[45] = 16'h2495;   // AEW
-        rom[46] = 16'h2533;   // AEB
-        rom[47] = 16'h26E3;   // VPT
-        rom[48] = 16'h9F78;   // HAECC1
-        rom[49] = 16'hA068;   // HAECC2
-        rom[50] = 16'hA10B;   // reserved
-        rom[51] = 16'hA6D8;   // HAECC3
-        rom[52] = 16'hA7D8;   // HAECC4
-        rom[53] = 16'hA8F0;   // HAECC5
-        rom[54] = 16'hA990;   // HAECC6
-        rom[55] = 16'hAA94;   // HAECC7
-        rom[56] = 16'h13E5;   // COM8: full AEC/AGC/AWB on
-        rom[57] = 16'h6900;   // GFIX: gain fix off
-        rom[58] = 16'h7400;   // REG74: digital gain off
-        rom[59] = 16'hB084;   // RSVD
-        rom[60] = 16'hB10C;   // ABLC1
-        rom[61] = 16'hB20E;   // RSVD
-        rom[62] = 16'hB380;   // THL_ST
-        rom[63] = 16'h5988;   // AWBC7
-        rom[64] = 16'h5A88;   // AWBC8
-        rom[65] = 16'h5B44;   // AWBC9
-        rom[66] = 16'h5C67;   // AWBC10
-        rom[67] = 16'h5D49;   // AWBC11
-        rom[68] = 16'h5E0E;   // AWBC12
-        rom[69] = 16'h6C0A;   // AWBCTR3
-        rom[70] = 16'h6D55;   // AWBCTR2
-        rom[71] = 16'h6E11;   // AWBCTR1
-        rom[72] = 16'h6F9F;   // AWBCTR0
-        rom[73] = 16'h5500;   // BRIGHT: neutral brightness
-        rom[74] = 16'h5640;   // CONTRAS: neutral contrast
-        rom[75] = 16'hFFFF;   // END SENTINEL
+        message[0]=16'h12_80;  //reset all register to default values
+        message[1]=16'h12_04;  //set output format to RGB
+        message[2]=16'h15_20;  //pclk will not toggle during horizontal blank
+        message[3]=16'h40_d0;	//RGB565
+        
+        // These are values scalped from https://github.com/jonlwowski012/OV7670_NEXYS4_Verilog/blob/master/ov7670_registers_verilog.v
+        message[4]= 16'h1204; // COM7,     set RGB color output
+        message[5]= 16'h1180; // CLKRC     internal PLL matches input clock
+        message[6]= 16'h0C00; // COM3,     default settings
+        message[7]= 16'h3E00; // COM14,    no scaling, normal pclock
+        message[8]= 16'h0400; // COM1,     disable CCIR656
+        message[9]= 16'h40d0; //COM15,     RGB565, full output range
+        message[10]= 16'h3a04; //TSLB       set correct output data sequence (magic)
+        message[11]= 16'h1418; //COM9       MAX AGC value x4 0001_1000
+        message[12]= 16'h4FB3; //MTX1       all of these are magical matrix coefficients
+        message[13]= 16'h50B3; //MTX2
+        message[14]= 16'h5100; //MTX3
+        message[15]= 16'h523d; //MTX4
+        message[16]= 16'h53A7; //MTX5
+        message[17]= 16'h54E4; //MTX6
+        message[18]= 16'h589E; //MTXS
+        message[19]= 16'h3DC0; //COM13      sets gamma enable, does not preserve reserved bits, may be wrong?
+        message[20]= 16'h1714; //HSTART     start high 8 bits
+        message[21]= 16'h1802; //HSTOP      stop high 8 bits //these kill the odd colored line
+        message[22]= 16'h3280; //HREF       edge offset
+        message[23]= 16'h1903; //VSTART     start high 8 bits
+        message[24]= 16'h1A7B; //VSTOP      stop high 8 bits
+        message[25]= 16'h030A; //VREF       vsync edge offset
+        message[26]= 16'h0F41; //COM6       reset timings
+        message[27]= 16'h1E00; //MVFP       disable mirror / flip //might have magic value of 03
+        message[28]= 16'h330B; //CHLF       //magic value from the internet
+        message[29]= 16'h3C78; //COM12      no HREF when VSYNC low
+        message[30]= 16'h6900; //GFIX       fix gain control
+        message[31]= 16'h7400; //REG74      Digital gain control
+        message[32]= 16'hB084; //RSVD       magic value from the internet *required* for good color
+        message[33]= 16'hB10c; //ABLC1
+        message[34]= 16'hB20e; //RSVD       more magic internet values
+        message[35]= 16'hB380; //THL_ST
+        //begin mystery scaling numbers
+        message[36]= 16'h703a;
+        message[37]= 16'h7135;
+        message[38]= 16'h7211;
+        message[39]= 16'h73f0;
+        message[40]= 16'ha202;
+        //gamma curve values
+        message[41]= 16'h7a20;
+        message[42]= 16'h7b10;
+        message[43]= 16'h7c1e;
+        message[44]= 16'h7d35;
+        message[45]= 16'h7e5a;
+        message[46]= 16'h7f69;
+        message[47]= 16'h8076;
+        message[48]= 16'h8180;
+        message[49]= 16'h8288;
+        message[50]= 16'h838f;
+        message[51]= 16'h8496;
+        message[52]= 16'h85a3;
+        message[53]= 16'h86af;
+        message[54]= 16'h87c4;
+        message[55]= 16'h88d7;
+        message[56]= 16'h89e8;
+        //AGC and AEC
+        message[57]= 16'h13e0; //COM8, disable AGC / AEC
+        message[58]= 16'h0000; //set gain reg to 0 for AGC
+        message[59]= 16'h1000; //set ARCJ reg to 0
+        message[60]= 16'h0d40; //magic reserved bit for COM4
+        message[61]= 16'h1418; //COM9, 4x gain + magic bit
+        message[62]= 16'ha505; // BD50MAX
+        message[63]= 16'hab07; //DB60MAX
+        message[64]= 16'h2495; //AGC upper limit
+        message[65]= 16'h2533; //AGC lower limit
+        message[66]= 16'h26e3; //AGC/AEC fast mode op region
+        message[67]= 16'h9f78; //HAECC1
+        message[68]= 16'ha068; //HAECC2
+        message[69]= 16'ha103; //magic
+        message[70]= 16'ha6d8; //HAECC3
+        message[71]= 16'ha7d8; //HAECC4
+        message[72]= 16'ha8f0; //HAECC5
+        message[73]= 16'ha990; //HAECC6
+        message[74]= 16'haa94; //HAECC7
+        message[75]= 16'h13e5; //COM8, enable AGC / AEC
+        message[76]= 16'h1E23; //Mirror Image
+        message[77]= 16'h6906; //gain of RGB(manually adjusted)
+    
     end
 
     // =========================================================================
@@ -345,11 +353,11 @@ module ov7670_init (
 
                 SEND_REG: begin
                     // IMPLEMENT: check sentinel, extract reg/data, trigger SCCB
-                    if (rom[rom_idx] == 16'hFFFF) begin
+                    if (message[rom_idx] == 16'hFFFF) begin
                         state <= CONFIG_DONE;
                     end else if (!sccb_started) begin
-                        sccb_reg_addr <= rom[rom_idx][15:8];
-                        sccb_reg_data <= rom[rom_idx][7:0];
+                        sccb_reg_addr <= message[rom_idx][15:8];
+                        sccb_reg_data <= message[rom_idx][7:0];
                         sccb_start    <= 1'b1;
                         sccb_started  <= 1'b1;
                     end
