@@ -3,8 +3,8 @@
 # SW Build 6140274 on Thu May 22 00:12:29 MDT 2025
 # IP Build 6138677 on Thu May 22 03:10:11 MDT 2025
 # SharedData Build 6139179 on Tue May 20 17:58:58 MDT 2025
-# Start of session at: Tue May  5 07:58:48 2026
-# Process ID         : 14140
+# Start of session at: Tue May  5 07:56:05 2026
+# Process ID         : 34184
 # Current directory  : C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/impl_1
 # Command line       : vivado.exe -log top.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source top.tcl -notrace
 # Log file           : C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.runs/impl_1/top.vdi
@@ -19,6 +19,6 @@
 # Host memory        : 16312 MB
 # Swap memory        : 21474 MB
 # Total Virtual      : 37787 MB
-# Available Virtual  : 11030 MB
+# Available Virtual  : 11792 MB
 #-----------------------------------------------------------
 source top.tcl -notrace

@@ -107,6 +107,7 @@ set rc [catch {
   create_msg_db write_bitstream.pb
   set_param chipscope.maxJobs 4
   set_param general.usePosixSpawnForFork 1
+  set_param xicom.use_bs_reader 1
   set_param runs.launchOptions { -jobs 14  }
   open_checkpoint top_routed.dcp
   set_property webtalk.parent_dir C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.cache/wt [current_project]
