@@ -156,8 +156,8 @@ module ov7670_init (
         rom[7]  = 16'h7211;   // SCALING_DCWCTR  (/2 H and V)
         rom[8]  = 16'h73F1;   // SCALING_PCLK_DIV
         rom[9]  = 16'hA202;   // SCALING_PCLK_DELAY
-        rom[10] = 16'h1500;   // COM10: PCLK free-running
-        rom[11] = 16'h40E0;   // COM15: RGB565 [00..FF]
+        rom[10] = 16'h1520;   // COM10: PCLK free-running
+        rom[11] = 16'h40D0;   // COM15: RGB565 [00..FF]
         rom[12] = 16'h4108;   // COM16
         rom[13] = 16'h4202;   // COM17
         rom[14] = 16'h1E00;   // MVFP: no mirror/flip

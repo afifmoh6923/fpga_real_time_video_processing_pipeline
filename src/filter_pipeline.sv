@@ -62,22 +62,6 @@ module filter_pipeline (
     output logic        pvalid_out
 );
 
-    // =========================================================================
-    // STEP 1 – CONTROL SIGNAL GENERATION
-    // =========================================================================
-    // pixel_advance: new camera column every 2 display pixels
-    //   Condition: drawX[0]==0  AND  drawX < 640  AND  drawY < 480
-    //   Note: drawX < 640 ↔ active_nblank in the horizontal direction only;
-    //         we also need drawY < 480.
-    logic pixel_advance;
-    logic row_advance;
-
-    assign pixel_advance = active_nblank
-                         && (drawX[0] == 1'b0);
-
-    assign row_advance   = active_nblank
-                         && (drawX == 10'd0)
-                         && (drawY[0] == 1'b0);
 
     // =========================================================================
     // STEP 2 – RGB565 → RGB888 EXPANSION
@@ -130,10 +114,30 @@ module filter_pipeline (
         endcase
     end
 
-    // Source pixel: test pattern or live camera
-    logic [23:0] source_rgb;
-    assign source_rgb = SW[15] ? (active_nblank ? test_pattern : 24'h000000) : rgb888;
+    // =========================================================================
+    // STEP 1 – CONTROL SIGNAL GENERATION
+    // =========================================================================
+    
+    // Define the centered 320x240 boundary
+    logic in_window;
+    assign in_window = (drawX >= 10'd160) && (drawX < 10'd480) && 
+                       (drawY >= 10'd120) && (drawY < 10'd360);
 
+    // Tell the filters to advance every single pixel, but ONLY inside the window
+    logic pixel_advance;
+    logic row_advance;
+
+    assign pixel_advance = active_nblank && in_window;
+    
+    // Pulse once at the exact start of the active camera row (Column 160)
+    assign row_advance   = active_nblank && in_window && (drawX == 10'd160);
+
+    // ... (Keep STEP 2 and the test_pattern case statement exactly the same) ...
+
+    // Update STEP 3: Draw black if we are outside the 320x240 window
+    logic [23:0] source_rgb;
+    assign source_rgb = SW[15] ? (active_nblank ? test_pattern : 24'h000000) : 
+                                 (in_window ? rgb888 : 24'h000000);
     // pixel_valid: active video indicator
     logic pixel_valid;
     assign pixel_valid = active_nblank;

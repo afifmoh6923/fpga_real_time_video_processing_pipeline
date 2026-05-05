@@ -231,9 +231,14 @@ logic clk_locked;
     end
 
     always_ff @(posedge pixel_clk) begin
-        fb_rd_addr <= (({9'b0, drawY[8:1]} << 8)
-                +  ({9'b0, drawY[8:1]} << 6)
-                +  {8'b0, drawX[9:1]});
+        // Only read from BRAM if we are inside the centered 320x240 window
+        if (drawX >= 10'd160 && drawX < 10'd480 && drawY >= 10'd120 && drawY < 10'd360) begin
+            // 1:1 Mapping (Subtract the offsets to start reading at memory address 0)
+            fb_rd_addr <= (17'(drawY - 10'd120) << 8) + (17'(drawY - 10'd120) << 6) + 17'(drawX - 10'd160);
+        end else begin
+            // Default address for the border
+            fb_rd_addr <= 17'd0; 
+        end
     end
 
     blk_mem_gen_0 frame_buffer (
