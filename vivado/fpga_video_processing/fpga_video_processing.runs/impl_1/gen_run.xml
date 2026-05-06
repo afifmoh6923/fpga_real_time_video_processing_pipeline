@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<GenRun Id="impl_1" LaunchPart="xc7s50csga324-1" LaunchTime="1777985757">
+<GenRun Id="impl_1" LaunchPart="xc7s50csga324-1" LaunchTime="1778102035">
   <File Type="PA-TCL" Name="top.tcl"/>
   <File Type="REPORTS-TCL" Name="top_reports.tcl"/>
   <File Type="INIT-TIMING" Name="top_timing_summary_init.rpt"/>
@@ -155,6 +155,13 @@
         <Attr Name="UsedIn" Val="simulation"/>
       </FileInfo>
     </File>
+    <File Path="$PPRDIR/../../src/font_rom.sv">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
     <File Path="$PPRDIR/../../src/line_buffer.sv">
       <FileInfo>
         <Attr Name="UsedIn" Val="synthesis"/>
@@ -197,16 +204,15 @@
         <Attr Name="UsedIn" Val="simulation"/>
       </FileInfo>
     </File>
-    <File Path="$PPRDIR/../../src/top.sv">
+    <File Path="$PPRDIR/../../src/text_overlay.sv">
       <FileInfo>
         <Attr Name="UsedIn" Val="synthesis"/>
         <Attr Name="UsedIn" Val="implementation"/>
         <Attr Name="UsedIn" Val="simulation"/>
       </FileInfo>
     </File>
-    <File Path="$PPRDIR/../../src/text_overlay.sv">
+    <File Path="$PPRDIR/../../src/top.sv">
       <FileInfo>
-        <Attr Name="AutoDisabled" Val="1"/>
         <Attr Name="UsedIn" Val="synthesis"/>
         <Attr Name="UsedIn" Val="implementation"/>
         <Attr Name="UsedIn" Val="simulation"/>

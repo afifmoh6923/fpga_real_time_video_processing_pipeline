@@ -1,21 +1,21 @@
 ///////////////////////////////////////////////////////////////////////////////
 // filter_pipeline.sv
-// ECE 385 Final Project – Real-Time FPGA Video Processing Pipeline
+// ECE 385 Final Project - Real-Time FPGA Video Processing Pipeline
 //
 // FILTER PIPELINE ORCHESTRATOR
-// ─────────────────────────────────────────────────────────────────────────────
+// ?????????????????????????????????????????????????????????????????????????????
 // This module:
 //   1. Expands the 16-bit RGB565 frame-buffer pixel to 24-bit RGB888
 //   2. Optionally substitutes a colour-bar test pattern (SW[15])
 //   3. Chains all filter stages in order:
-//        brightness_contrast → channel_isolate → grayscale →
-//        box_blur → sharpen → edge_detect
+//        brightness_contrast ? channel_isolate ? grayscale ?
+//        box_blur ? sharpen ? edge_detect
 //   4. Generates pixel_advance and row_advance control signals for the
 //      neighbourhood filters (line buffers).
 //
 // Pixel-doubling:
-//   Camera QVGA (320×240) is displayed pixel-doubled onto 640×480 VGA.
-//   Each camera pixel occupies a 2×2 block of display pixels.
+//   Camera QVGA (320?240) is displayed pixel-doubled onto 640?480 VGA.
+//   Each camera pixel occupies a 2?2 block of display pixels.
 //   The neighbourhood filters must only advance once per camera pixel
 //   (not once per display pixel) otherwise they would process each row twice.
 //
@@ -38,8 +38,8 @@
 //   edge_detect         : 2
 //   Total               : 9 cycles
 //
-//   At 25 MHz and 640 pixels/row this is 9/25e6 s ≈ 360 ns
-//   → sub-pixel delay, acceptable for real-time display.
+//   At 25 MHz and 640 pixels/row this is 9/25e6 s ? 360 ns
+//   ? sub-pixel delay, acceptable for real-time display.
 //   All bypass paths are register-matched inside each module.
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -49,7 +49,7 @@ module filter_pipeline (
 
     input  logic [15:0] SW,             // synchronised switch bus
 
-    // VGA scan position (from vga_controller – note lowercase signal names)
+    // VGA scan position (from vga_controller - note lowercase signal names)
     input  logic [9:0]  drawX,
     input  logic [9:0]  drawY,
     input  logic        active_nblank,  // HIGH = active video
@@ -64,7 +64,7 @@ module filter_pipeline (
 
 
     // =========================================================================
-    // STEP 2 – RGB565 → RGB888 EXPANSION
+    // STEP 2 - RGB565 ? RGB888 EXPANSION
     // =========================================================================
     // RGB565 layout: [15:11]=R5  [10:5]=G6  [4:0]=B5
     // Expand to 8-bit per channel by replicating the MSBs:
@@ -78,15 +78,44 @@ module filter_pipeline (
     //   B8 = {fb_data[4:0],   fb_data[4:2]}
     //   rgb888 = {R8, G8, B8}
     logic [7:0] R8, G8, B8;
-    assign R8 = {fb_data[15:11], fb_data[15:13]};
-    assign G8 = {fb_data[10:5],  fb_data[10:9]};
-    assign B8 = {fb_data[4:0],   fb_data[4:2]};
+    assign R8 = {fb_data[15:11], fb_data[13:11]};  // R5's own low 3 bits: bits [13:11]
+    assign G8 = {fb_data[10:5],  fb_data[6:5]};    // G6's own low 2 bits: bits [6:5]
+    assign B8 = {fb_data[4:0],   fb_data[2:0]};    // B5's own low 3 bits: bits [2:0]
+
+        // =========================================================================
+    // WHITE BALANCE CORRECTION
+    // Applied after RGB565 extraction, before filters.
+    // The camera sensor + indoor lighting combination produces:
+    //   R: correct  G: ~33% too bright  B: ~50% too dark
+    // Correction factors determined empirically:
+    //   R_cal = R8                  (no change)
+    //   G_cal = G8 * 0.75           (attenuate G by 25%: G*3>>2)
+    //   B_cal = min(B8 * 2, 255)    (boost B by 2x, saturate at 255)
+    // Use 10-bit intermediates to detect overflow before clamping.
+    // =========================================================================
+    // White balance correction calibrated from channel isolation test:
+    // White ceiling measured: R=medium, G=clipping(255), B=very dark(~50)
+    // G needs crushing to 0.625x: G*5>>3
+    // B needs heavy boost to 3.0x: clamped at 255
+    // R is the reference, left unchanged.
+    // White balance: G*0.625 (crush overexposed green), B*3 (boost dark blue)
+    // All arithmetic uses wide intermediates to avoid 8-bit overflow truncation.
+    // G*5 in 11 bits then [10:3] = >>3 = *0.625
+    // B*3 in 10 bits then clamp via [9] overflow bit
+    logic [10:0] G_wb;  // 11-bit: 255*5=1275 needs 11 bits
+    logic [9:0]  B_wb;  // 10-bit: 255*3=765 needs 10 bits
+    logic [7:0]  R_cal, G_cal, B_cal;
+    assign G_wb  = {2'b0, G8} * 5;                        // G*5 (11-bit, no overflow)
+    assign B_wb  = ({2'b0, B8} << 1) + {2'b0, B8};        // B*3 = B*2+B (10-bit, no overflow)
+    assign R_cal = R8;
+    assign G_cal = G_wb[10:3];                             // G*5>>3 = G*0.625
+    assign B_cal = (|B_wb[9:8]) ? 8'hFF : B_wb[7:0];      // clamp if B*3 > 255
 
     logic [23:0] rgb888;
-    assign rgb888 = {R8, G8, B8};
+    assign rgb888 = {R_cal, G_cal, B_cal};
 
     // =========================================================================
-    // STEP 3 – TEST PATTERN OVERRIDE (SW[15])
+    // STEP 3 - TEST PATTERN OVERRIDE (SW[15])
     // =========================================================================
     // 8 vertical colour bars based on drawX[9:7] (upper 3 display bits)
     // PSEUDO-CODE:
@@ -115,7 +144,7 @@ module filter_pipeline (
     end
 
     // =========================================================================
-    // STEP 1 – CONTROL SIGNAL GENERATION
+    // STEP 1 - CONTROL SIGNAL GENERATION
     // =========================================================================
     
     // Define the centered 320x240 boundary
@@ -143,11 +172,11 @@ module filter_pipeline (
     assign pixel_valid = active_nblank;
 
     // =========================================================================
-    // STEP 4 – FILTER CHAIN INSTANTIATION
+    // STEP 4 - FILTER CHAIN INSTANTIATION
     // =========================================================================
-    // Stage outputs wired in series: s1_out → s2_out → ... → s6_out
+    // Stage outputs wired in series: s1_out ? s2_out ? ... ? s6_out
 
-    // ── Stage 1: Brightness / Contrast ───────────────────────────────────────
+    // ?? Stage 1: Brightness / Contrast ???????????????????????????????????????
     logic [23:0] s1_out; logic s1_valid;
     brightness_contrast s1 (
         .clk          (pixel_clk),  .reset        (reset),
@@ -156,7 +185,7 @@ module filter_pipeline (
         .rgb_out      (s1_out),     .pvalid_out   (s1_valid)
     );
 
-    // ── Stage 2: Channel Isolation ────────────────────────────────────────────
+    // ?? Stage 2: Channel Isolation ????????????????????????????????????????????
     logic [23:0] s2_out; logic s2_valid;
     channel_isolate s2 (
         .clk        (pixel_clk),  .reset      (reset),
@@ -165,16 +194,16 @@ module filter_pipeline (
         .rgb_out    (s2_out),     .pvalid_out (s2_valid)
     );
 
-    // ── Stage 3: Grayscale ───────────────────────────────────────────────────
+    // ?? Stage 3: Grayscale ???????????????????????????????????????????????????
     logic [23:0] s3_out; logic s3_valid;
     grayscale s3 (
         .clk        (pixel_clk),  .reset      (reset),
-        .enable     (1'b0),
+        .enable     (SW[11]),
         .pixel_valid(s2_valid),   .rgb_in     (s2_out),
         .rgb_out    (s3_out),     .pvalid_out (s3_valid)
     );
 
-    // ── Stage 4: Box Blur ─────────────────────────────────────────────────────
+    // ?? Stage 4: Box Blur ?????????????????????????????????????????????????????
     logic [23:0] s4_out; logic s4_valid;
     box_blur s4 (
         .clk          (pixel_clk), .reset        (reset),
@@ -183,42 +212,63 @@ module filter_pipeline (
         .pixel_valid  (s3_valid),  .rgb_in       (s3_out),
         .rgb_out      (s4_out),    .pvalid_out   (s4_valid)
     );
-
-    // ── Stage 5: Sharpen ──────────────────────────────────────────────────────
+    logic [8:0] pa_pipe, ra_pipe; // Pipeline for pixel and row advance signals
+    always_ff @(posedge pixel_clk) begin
+        if (reset) begin
+            pa_pipe <= '0;
+            ra_pipe <= '0;
+        end else begin
+            pa_pipe <= {pa_pipe[7:0], pixel_advance};
+            ra_pipe <= {ra_pipe[7:0], row_advance};
+        end
+    end
+    // ?? Stage 5: Sharpen ??????????????????????????????????????????????????????
     logic [23:0] s5_out; logic s5_valid;
     sharpen s5 (
         .clk          (pixel_clk), .reset        (reset),
         .enable       (SW[8]),
-        .pixel_advance(pixel_advance), .row_advance(row_advance),
+        .pixel_advance(pa_pipe[4]), .row_advance(ra_pipe[4]),
         .pixel_valid  (s4_valid),  .rgb_in       (s4_out),
         .rgb_out      (s5_out),    .pvalid_out   (s5_valid)
     );
 
-    // ── Stage 6: Edge Detection ───────────────────────────────────────────────
+    // ?? Stage 6: Edge Detection ???????????????????????????????????????????????
     logic [23:0] s6_out; logic s6_valid;
     edge_detect s6 (
         .clk          (pixel_clk), .reset        (reset),
         .enable       (SW[1]),
-        .pixel_advance(pixel_advance), .row_advance(row_advance),
+        .pixel_advance(pa_pipe[6]), .row_advance(ra_pipe[6]),
         .pixel_valid  (s5_valid),  .rgb_in       (s5_out),
         .rgb_out      (s6_out),    .pvalid_out   (s6_valid)
     );
-
+    logic [23:0] s7_out; logic s7_valid;
+    emboss s7 (
+        .clk          (pixel_clk), .reset        (reset),
+        .enable       (SW[9]),
+        .pixel_advance(pa_pipe[8]), .row_advance(ra_pipe[8]),
+        .pixel_valid  (s6_valid),  .rgb_in       (s6_out),
+        .rgb_out      (s7_out),    .pvalid_out   (s7_valid)
+    );
+    logic [23:0] s8_out; logic s8_valid;
+    invert s8 (
+        .clk        (pixel_clk), .reset      (reset),
+        .enable     (SW[12]),
+        .pixel_valid(s7_valid),  .rgb_in     (s7_out),
+        .rgb_out    (s8_out),    .pvalid_out (s8_valid)
+    );
     // =========================================================================
-    // STEP 5 – OUTPUT ASSIGNMENT
+    // STEP 5 - OUTPUT ASSIGNMENT
     // =========================================================================
-    logic [8:0] in_window_pipe;
-    
-    always_ff @(posedge pixel_clk) begin
-        if (reset) begin
-            in_window_pipe <= 9'b0;
-        end else begin
-            in_window_pipe <= {in_window_pipe[7:0], in_window};
-        end
-    end
-
     // Force perfectly black pixels outside the window
-    assign filtered_rgb = in_window_pipe[8] ? s6_out : 24'h000000;
-    assign pvalid_out   = s6_valid;
+    // in_window is already in sync with fb_data since drawX_d/drawY_d are passed in
+    logic [11:0] in_window_pipe;
+    always_ff @(posedge pixel_clk) begin
+        if (reset)
+            in_window_pipe <= 12'b0;
+        else
+            in_window_pipe <= {in_window_pipe[10:0], in_window};
+    end
+    assign filtered_rgb = in_window_pipe[11] ? s8_out : 24'h000000;
+    assign pvalid_out   = s8_valid;
 
 endmodule

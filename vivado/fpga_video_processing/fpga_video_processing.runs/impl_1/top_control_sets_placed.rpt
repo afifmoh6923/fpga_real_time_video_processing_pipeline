@@ -1,7 +1,7 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2025.1 (win64) Build 6140274 Thu May 22 00:12:29 MDT 2025
-| Date         : Tue May  5 07:57:22 2026
+| Date         : Wed May  6 16:15:50 2026
 | Host         : afiflaptop running 64-bit major release  (build 9200)
 | Command      : report_control_sets -verbose -file top_control_sets_placed.rpt
 | Design       : top
@@ -23,11 +23,11 @@ Table of Contents
 +----------------------------------------------------------+-------+
 |                          Status                          | Count |
 +----------------------------------------------------------+-------+
-| Total control sets                                       |    58 |
-|    Minimum number of control sets                        |    58 |
+| Total control sets                                       |    84 |
+|    Minimum number of control sets                        |    84 |
 |    Addition due to synthesis replication                 |     0 |
 |    Addition due to physical synthesis replication        |     0 |
-| Unused register locations in slices containing registers |   110 |
+| Unused register locations in slices containing registers |   130 |
 +----------------------------------------------------------+-------+
 * Control sets can be merged at opt_design using control_set_merge or merge_equivalent_drivers
 ** Run report_qor_suggestions for automated merging and remapping suggestions
@@ -39,15 +39,15 @@ Table of Contents
 +--------------------+-------+
 |       Fanout       | Count |
 +--------------------+-------+
-| Total control sets |    58 |
+| Total control sets |    84 |
 | >= 0 to < 4        |     5 |
 | >= 4 to < 6        |     4 |
 | >= 6 to < 8        |     2 |
-| >= 8 to < 10       |     4 |
-| >= 10 to < 12      |     2 |
-| >= 12 to < 14      |     0 |
+| >= 8 to < 10       |    14 |
+| >= 10 to < 12      |     0 |
+| >= 12 to < 14      |     2 |
 | >= 14 to < 16      |     1 |
-| >= 16              |    40 |
+| >= 16              |    56 |
 +--------------------+-------+
 * Control sets can be remapped at either synth_design or opt_design
 
@@ -58,12 +58,12 @@ Table of Contents
 +--------------+-----------------------+------------------------+-----------------+--------------+
 | Clock Enable | Synchronous Set/Reset | Asynchronous Set/Reset | Total Registers | Total Slices |
 +--------------+-----------------------+------------------------+-----------------+--------------+
-| No           | No                    | No                     |              93 |           36 |
-| No           | No                    | Yes                    |              61 |           33 |
-| No           | Yes                   | No                     |             269 |           68 |
-| Yes          | No                    | No                     |              46 |           15 |
-| Yes          | No                    | Yes                    |              95 |           27 |
-| Yes          | Yes                   | No                     |             574 |          173 |
+| No           | No                    | No                     |             327 |          196 |
+| No           | No                    | Yes                    |              61 |           29 |
+| No           | Yes                   | No                     |             411 |          144 |
+| Yes          | No                    | No                     |              45 |           24 |
+| Yes          | No                    | Yes                    |             102 |           31 |
+| Yes          | Yes                   | No                     |            1324 |          538 |
 +--------------+-----------------------+------------------------+-----------------+--------------+
 
 
@@ -74,63 +74,89 @@ Table of Contents
 |      Clock Signal      |                    Enable Signal                   |          Set/Reset Signal         | Slice Load Count | Bel Load Count | Bels / Slice |
 +------------------------+----------------------------------------------------+-----------------------------------+------------------+----------------+--------------+
 |  clk_gen/inst/clk_out3 |                                                    |                                   |                1 |              1 |         1.00 |
-|  clk_gen/inst/clk_out3 | cam_init/sccb_ctrl/sioc_i_1_n_0                    | cam_init/sccb_ctrl/init_ready_reg |                1 |              1 |         1.00 |
 |  clk_gen/inst/clk_out3 | cam_init/config_done_i_1_n_0                       | cam_init/sccb_ctrl/init_ready_reg |                1 |              1 |         1.00 |
+|  clk_gen/inst/clk_out3 | cam_init/sccb_ctrl/sioc_i_1_n_0                    | cam_init/sccb_ctrl/init_ready_reg |                1 |              2 |         2.00 |
 |  cam_pclk_IBUF_BUFG    |                                                    | capture/wr_en_i_1_n_0             |                1 |              2 |         2.00 |
-|  cam_pclk_IBUF_BUFG    |                                                    |                                   |                1 |              3 |         3.00 |
-|  clk_gen/inst/clk_out3 | cam_init/sccb_ctrl/FSM_sequential_state[3]_i_1_n_0 | cam_init/sccb_ctrl/init_ready_reg |                1 |              4 |         4.00 |
+|  cam_pclk_IBUF_BUFG    |                                                    |                                   |                2 |              3 |         1.50 |
 |  clk_gen/inst/clk_out3 | cam_init/sccb_ctrl/bit_cnt                         | cam_init/sccb_ctrl/init_ready_reg |                1 |              4 |         4.00 |
-|  clk_gen/inst/clk_out1 |                                                    | fp/s5/lb/SR[0]                    |                2 |              4 |         2.00 |
-|  clk_gen/inst/clk_out3 | cam_init/sccb_reg_data[7]_i_1_n_0                  |                                   |                3 |              5 |         1.67 |
-|  clk_gen/inst/clk_out1 |                                                    | fp/s5/lb/SR[2]                    |                4 |              6 |         1.50 |
+|  clk_gen/inst/clk_out1 |                                                    | txt/video_out[7]_i_1_n_0          |                4 |              4 |         1.00 |
+|  clk_gen/inst/clk_out3 | cam_init/sccb_ctrl/FSM_sequential_state[3]_i_1_n_0 | cam_init/sccb_ctrl/init_ready_reg |                1 |              4 |         4.00 |
+|  clk_gen/inst/clk_out3 | cam_init/sccb_reg_data[7]_i_1_n_0                  |                                   |                4 |              4 |         1.00 |
+|  clk_gen/inst/clk_out1 |                                                    | vga/p_0_in[2]                     |                2 |              7 |         3.50 |
 |  clk_gen/inst/clk_out3 |                                                    | cam_init/sccb_ctrl/init_ready_reg |                4 |              7 |         1.75 |
-|  clk_gen/inst/clk_out1 |                                                    | fp/s5/lb/SR[1]                    |                3 |              8 |         2.67 |
+|  clk_gen/inst/clk_out1 |                                                    | fp/s5/lb/p_1_in[1]                |                4 |              8 |         2.00 |
+|  clk_gen/inst/clk_out1 |                                                    | vga/p_0_in[1]                     |                4 |              8 |         2.00 |
+|  clk_gen/inst/clk_out1 |                                                    | vga/p_0_in[0]                     |                4 |              8 |         2.00 |
+|  cam_pclk_IBUF_BUFG    | capture/high_byte[7]_i_1_n_0                       |                                   |                6 |              8 |         1.33 |
+|  clk_gen/inst/clk_out1 |                                                    | fp/s5/lb/p_1_in[0]                |                5 |              8 |         1.60 |
+|  clk_gen/inst/clk_out1 |                                                    | fp/s5/lb/p_1_in[2]                |                4 |              8 |         2.00 |
+|  clk_gen/inst/clk_out1 |                                                    | fp/s6/lb/SR[0]                    |                2 |              8 |         4.00 |
+|  clk_gen/inst/clk_out1 |                                                    | fp/s6/lb/SR[1]                    |                3 |              8 |         2.67 |
+|  clk_gen/inst/clk_out1 |                                                    | fp/s6/lb/SR[2]                    |                3 |              8 |         2.67 |
 |  cam_pclk_IBUF_BUFG    | capture/row                                        | capture/wr_en1                    |                2 |              8 |         4.00 |
-|  cam_pclk_IBUF_BUFG    | capture/high_byte[7]_i_1_n_0                       |                                   |                3 |              8 |         2.67 |
-|  cam_pclk_IBUF_BUFG    | capture/col                                        | capture/col[8]_i_1_n_0            |                3 |              9 |         3.00 |
-|  clk_gen/inst/clk_out1 | vga/vc                                             | reset_btn_IBUF                    |                3 |             10 |         3.33 |
-|  clk_gen/inst/clk_out3 | cam_init/sccb_reg_data[7]_i_1_n_0                  | cam_init/sccb_reg_data[6]_i_1_n_0 |                3 |             11 |         3.67 |
-|  clk_gen/inst/clk_out3 | cam_init/rom_idx_rep_rep[6]_i_1_n_0                | cam_init/sccb_ctrl/init_ready_reg |                3 |             14 |         4.67 |
-|  clk_gen/inst/clk_out3 | cam_init/sccb_ctrl/clk_cnt_0                       | cam_init/sccb_ctrl/init_ready_reg |                6 |             16 |         2.67 |
-|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_1_reg_128_191_6_8_i_1_n_0        |                                   |                4 |             16 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_0_reg_0_63_6_8_i_1_n_0           |                                   |                4 |             16 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_0_reg_64_127_6_8_i_1_n_0         |                                   |                4 |             16 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_0_reg_256_319_6_8_i_1_n_0        |                                   |                4 |             16 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_0_reg_128_191_6_8_i_1_n_0        |                                   |                4 |             16 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_1_reg_0_63_6_8_i_1_n_0           |                                   |                4 |             16 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_0_reg_192_255_6_8_i_1_n_0        |                                   |                4 |             16 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_1_reg_256_319_6_8_i_1_n_0        |                                   |                4 |             16 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_1_reg_64_127_6_8_i_1_n_0         |                                   |                4 |             16 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_1_reg_192_255_6_8_i_1_n_0        |                                   |                4 |             16 |         4.00 |
-|  clk_gen/inst/clk_out1 |                                                    | vga/SR[0]                         |                5 |             17 |         3.40 |
+|  clk_gen/inst/clk_out1 | fp/pa_pipe[8]                                      | fp/s7/lb/wr_ptr[8]_i_1__1_n_0     |                3 |              9 |         3.00 |
+|  clk_gen/inst/clk_out1 | fp/pa_pipe[6]                                      | fp/s6/lb/wr_ptr[8]_i_1__0_n_0     |                3 |              9 |         3.00 |
+|  clk_gen/inst/clk_out1 | fp/pa_pipe[4]                                      | fp/s5/lb/wr_ptr[8]_i_1_n_0        |                4 |              9 |         2.25 |
+|  cam_pclk_IBUF_BUFG    | capture/col                                        | capture/col[8]_i_1_n_0            |                4 |              9 |         2.25 |
+|  clk_gen/inst/clk_out3 | cam_init/sccb_reg_data[7]_i_1_n_0                  | cam_init/sccb_reg_data[6]_i_1_n_0 |                7 |             12 |         1.71 |
+|  clk_gen/inst/clk_out1 |                                                    | fp/in_window_pipe[0]              |                7 |             12 |         1.71 |
+|  clk_gen/inst/clk_out3 | cam_init/rom_idx_rep_rep[6]_i_1_n_0                | cam_init/sccb_ctrl/init_ready_reg |                6 |             14 |         2.33 |
+|  clk_gen/inst/clk_out3 | cam_init/sccb_ctrl/clk_cnt_0                       | cam_init/sccb_ctrl/init_ready_reg |                3 |             16 |         5.33 |
+|  clk_gen/inst/clk_out1 | vga/vc                                             | reset_btn_IBUF                    |                6 |             16 |         2.67 |
+|  clk_gen/inst/clk_out1 |                                                    | fb_rd_addr[16]_i_1_n_0            |                6 |             17 |         2.83 |
 |  clk_gen/inst/clk_out3 | cam_init/sccb_ctrl/E[0]                            | cam_init/sccb_ctrl/init_ready_reg |                5 |             21 |         4.20 |
+|  clk_gen/inst/clk_out3 | cam_init/sccb_ctrl/shift_reg_1                     | cam_init/sccb_ctrl/init_ready_reg |                7 |             24 |         3.43 |
 |  clk_gen/inst/clk_out3 | init_delay[0]_i_2_n_0                              | clear                             |                6 |             24 |         4.00 |
-|  clk_gen/inst/clk_out3 | cam_init/sccb_ctrl/shift_reg_1                     | cam_init/sccb_ctrl/init_ready_reg |                6 |             24 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_0_reg_128_191_0_2_i_1_n_0        |                                   |                8 |             32 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_0_reg_256_319_0_2_i_1_n_0        |                                   |                8 |             32 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_0_reg_192_255_0_2_i_1_n_0        |                                   |                8 |             32 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_0_reg_64_127_0_2_i_1_n_0         |                                   |                8 |             32 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_1_reg_0_63_0_2_i_1_n_0           |                                   |                8 |             32 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_1_reg_256_319_0_2_i_1_n_0        |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_0_reg_256_319_0_2_i_1__1_n_0     |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_0_reg_128_191_0_2_i_1__1_n_0     |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_0_reg_192_255_0_2_i_1__1_n_0     |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_1_reg_0_63_0_2_i_1__1_n_0        |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_0_reg_64_127_0_2_i_1__1_n_0      |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_1_reg_128_191_0_2_i_1__1_n_0     |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_1_reg_256_319_0_2_i_1__1_n_0     |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_1_reg_64_127_0_2_i_1__1_n_0      |                                   |                8 |             32 |         4.00 |
 |  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_1_reg_128_191_0_2_i_1_n_0        |                                   |                8 |             32 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_1_reg_192_255_0_2_i_1_n_0        |                                   |                8 |             32 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_1_reg_64_127_0_2_i_1_n_0         |                                   |                8 |             32 |         4.00 |
 |  clk_gen/inst/clk_out1 | fp/s5/lb/line_ram_0_reg_0_63_0_2_i_1__0_n_0        |                                   |                8 |             32 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s5/lb/line_ram_0_reg_128_191_0_2_i_1__0_n_0     |                                   |                8 |             32 |         4.00 |
 |  clk_gen/inst/clk_out1 | fp/s5/lb/line_ram_0_reg_192_255_0_2_i_1__0_n_0     |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s5/lb/line_ram_0_reg_128_191_0_2_i_1__0_n_0     |                                   |                8 |             32 |         4.00 |
 |  clk_gen/inst/clk_out1 | fp/s5/lb/line_ram_0_reg_256_319_0_2_i_1__0_n_0     |                                   |                8 |             32 |         4.00 |
 |  clk_gen/inst/clk_out1 | fp/s5/lb/line_ram_1_reg_0_63_0_2_i_1__0_n_0        |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s5/lb/line_ram_0_reg_64_127_0_2_i_1__0_n_0      |                                   |                8 |             32 |         4.00 |
 |  clk_gen/inst/clk_out1 | fp/s5/lb/line_ram_1_reg_128_191_0_2_i_1__0_n_0     |                                   |                8 |             32 |         4.00 |
 |  clk_gen/inst/clk_out1 | fp/s5/lb/line_ram_1_reg_192_255_0_2_i_1__0_n_0     |                                   |                8 |             32 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s5/lb/line_ram_1_reg_64_127_0_2_i_1__0_n_0      |                                   |                8 |             32 |         4.00 |
 |  clk_gen/inst/clk_out1 | fp/s5/lb/line_ram_1_reg_256_319_0_2_i_1__0_n_0     |                                   |                8 |             32 |         4.00 |
-|  clk_gen/inst/clk_out1 | fp/s5/lb/line_ram_0_reg_64_127_0_2_i_1__0_n_0      |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s5/lb/line_ram_1_reg_64_127_0_2_i_1__0_n_0      |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s7/lb/line_ram_0_reg_0_63_0_2_i_1__2_n_0        |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s7/lb/line_ram_0_reg_256_319_0_2_i_1__2_n_0     |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s7/lb/line_ram_0_reg_128_191_0_2_i_1__2_n_0     |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s7/lb/line_ram_0_reg_192_255_0_2_i_1__2_n_0     |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s7/lb/line_ram_1_reg_0_63_0_2_i_1__2_n_0        |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s7/lb/line_ram_1_reg_128_191_0_2_i_1__2_n_0     |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s7/lb/line_ram_0_reg_64_127_0_2_i_1__2_n_0      |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s7/lb/line_ram_1_reg_256_319_0_2_i_1__2_n_0     |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s7/lb/line_ram_1_reg_64_127_0_2_i_1__2_n_0      |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_0_reg_128_191_0_2_i_1_n_0        |                                   |                8 |             32 |         4.00 |
 |  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_0_reg_0_63_0_2_i_1_n_0           |                                   |                8 |             32 |         4.00 |
-|  cam_pclk_IBUF_BUFG    | capture/wr_addr[16]_i_1_n_0                        |                                   |                9 |             33 |         3.67 |
-|  clk_gen/inst/clk_out1 |                                                    | hdmi_inst/inst/encr/AR[0]         |               23 |             42 |         1.83 |
-|  clk_gen/inst/clk_out1 |                                                    |                                   |               37 |            107 |         2.89 |
-|  clk_gen/inst/clk_out1 |                                                    | reset_btn_IBUF                    |               59 |            244 |         4.14 |
-|  clk_gen/inst/clk_out1 | vga/pixel_advance                                  | reset_btn_IBUF                    |              159 |            522 |         3.28 |
+|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_1_reg_192_255_0_2_i_1__1_n_0     |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_0_reg_192_255_0_2_i_1_n_0        |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_0_reg_64_127_0_2_i_1_n_0         |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_0_reg_256_319_0_2_i_1_n_0        |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_1_reg_192_255_0_2_i_1_n_0        |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_1_reg_0_63_0_2_i_1_n_0           |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_1_reg_256_319_0_2_i_1_n_0        |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s4/lb/line_ram_1_reg_64_127_0_2_i_1_n_0         |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s6/lb/line_ram_0_reg_0_63_0_2_i_1__1_n_0        |                                   |                8 |             32 |         4.00 |
+|  clk_gen/inst/clk_out1 | fp/s7/lb/line_ram_1_reg_192_255_0_2_i_1__2_n_0     |                                   |                8 |             32 |         4.00 |
+|  cam_pclk_IBUF_BUFG    | capture/wr_addr[16]_i_1_n_0                        |                                   |               14 |             33 |         2.36 |
+|  clk_gen/inst/clk_out1 | txt/vsync_fall                                     | reset_btn_IBUF                    |               18 |             34 |         1.89 |
+|  clk_gen/inst/clk_out1 |                                                    | hdmi_inst/inst/encr/AR[0]         |               20 |             42 |         2.10 |
+|  clk_gen/inst/clk_out1 | fp/pa_pipe[8]                                      | reset_btn_IBUF                    |               84 |            207 |         2.46 |
+|  clk_gen/inst/clk_out1 | fp/pa_pipe[6]                                      | reset_btn_IBUF                    |               97 |            231 |         2.38 |
+|  clk_gen/inst/clk_out1 | fp/pa_pipe[4]                                      | reset_btn_IBUF                    |               69 |            231 |         3.35 |
+|  clk_gen/inst/clk_out1 | vga/pixel_advance                                  | reset_btn_IBUF                    |               63 |            240 |         3.81 |
+|  clk_gen/inst/clk_out1 | txt/vsync_fall                                     | txt/reset_btn                     |              178 |            301 |         1.69 |
+|  clk_gen/inst/clk_out1 |                                                    | reset_btn_IBUF                    |              100 |            317 |         3.17 |
+|  clk_gen/inst/clk_out1 |                                                    |                                   |              196 |            343 |         1.75 |
 +------------------------+----------------------------------------------------+-----------------------------------+------------------+----------------+--------------+
 
 

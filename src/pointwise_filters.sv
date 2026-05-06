@@ -130,26 +130,33 @@ module brightness_contrast (
     // =========================================================================
 
     // ── Contrast stage ───────────────────────────────────────────────────────
-    logic [8:0] R_c, G_c, B_c;
+    // FIXED: real contrast stretching around the midpoint (128).
+    // Formula: out = (in - 128) * 2 + 128  =  in*2 - 128
+    // This makes darks darker and brights brighter simultaneously,
+    // unlike the old 1.5x scale which just made everything brighter.
+    // Using 9-bit signed: range is -128 to +382, clamped to [0,255].
+    logic signed [9:0] R_c, G_c, B_c;
     always_comb begin
         if (en_contrast) begin
-            R_c = {1'b0, rgb_in[23:16]} + {2'b0, rgb_in[23:17]};   // R + R/2
-            G_c = {1'b0, rgb_in[15:8]}  + {2'b0, rgb_in[15:9]};
-            B_c = {1'b0, rgb_in[7:0]}   + {2'b0, rgb_in[7:1]};
+            // (val - 128) * 2 + 128 = val*2 - 128
+            R_c = $signed({2'b0, rgb_in[23:16]}) * 2 - 10'sd128;
+            G_c = $signed({2'b0, rgb_in[15:8]})  * 2 - 10'sd128;
+            B_c = $signed({2'b0, rgb_in[7:0]})   * 2 - 10'sd128;
         end else begin
-            R_c = {1'b0, rgb_in[23:16]};
-            G_c = {1'b0, rgb_in[15:8]};
-            B_c = {1'b0, rgb_in[7:0]};
+            R_c = $signed({2'b0, rgb_in[23:16]});
+            G_c = $signed({2'b0, rgb_in[15:8]});
+            B_c = $signed({2'b0, rgb_in[7:0]});
         end
     end
 
     // ── Brightness stage ─────────────────────────────────────────────────────
-    logic [8:0] R_b, G_b, B_b;
+    // Add fixed offset; use same 10-bit signed intermediate from contrast stage
+    logic signed [9:0] R_b, G_b, B_b;
     always_comb begin
         if (en_brightness) begin
-            R_b = R_c + {1'b0, BRIGHT_OFFSET};
-            G_b = G_c + {1'b0, BRIGHT_OFFSET};
-            B_b = B_c + {1'b0, BRIGHT_OFFSET};
+            R_b = R_c + $signed({2'b0, BRIGHT_OFFSET});
+            G_b = G_c + $signed({2'b0, BRIGHT_OFFSET});
+            B_b = B_c + $signed({2'b0, BRIGHT_OFFSET});
         end else begin
             R_b = R_c;
             G_b = G_c;
@@ -165,9 +172,9 @@ module brightness_contrast (
         end else begin
             pvalid_out <= pixel_valid;
             rgb_out    <= {
-                (R_b[8] ? 8'hFF : R_b[7:0]),
-                (G_b[8] ? 8'hFF : G_b[7:0]),
-                (B_b[8] ? 8'hFF : B_b[7:0])
+                (R_b < 0 ? 8'h00 : R_b > 255 ? 8'hFF : R_b[7:0]),
+                (G_b < 0 ? 8'h00 : G_b > 255 ? 8'hFF : G_b[7:0]),
+                (B_b < 0 ? 8'h00 : B_b > 255 ? 8'hFF : B_b[7:0])
             };
         end
     end
@@ -227,4 +234,41 @@ module channel_isolate (
         end
     end
 
+endmodule
+
+
+///////////////////////////////////////////////////////////////////////////////
+// invert  (NEW — SW[11])
+// ─────────────────────────────────────────────────────────────────────────────
+// Inverts each colour channel: out = 255 - in
+// Creates a photographic negative effect. Very simple but visually striking.
+// Pipeline depth: 1 cycle.
+///////////////////////////////////////////////////////////////////////////////
+module invert (
+    input  logic        clk,
+    input  logic        reset,
+    input  logic        enable,         // SW[11]
+
+    input  logic        pixel_valid,
+    input  logic [23:0] rgb_in,
+
+    output logic [23:0] rgb_out,
+    output logic        pvalid_out
+);
+    always_ff @(posedge clk) begin
+        if (reset) begin
+            rgb_out    <= 24'h0;
+            pvalid_out <= 1'b0;
+        end else begin
+            pvalid_out <= pixel_valid;
+            if (enable)
+                rgb_out <= {
+                    8'hFF - rgb_in[23:16],
+                    8'hFF - rgb_in[15:8],
+                    8'hFF - rgb_in[7:0]
+                };
+            else
+                rgb_out <= rgb_in;
+        end
+    end
 endmodule

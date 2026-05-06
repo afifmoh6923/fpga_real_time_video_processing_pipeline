@@ -83,12 +83,14 @@ read_verilog -library xil_defaultlib -sv {
   C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/color_mapper.sv
   C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/conv_filters.sv
   C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/filter_pipeline.sv
+  C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/font_rom.sv
   C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/line_buffer.sv
   C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/ov7670_capture.sv
   C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/ov7670_init.sv
   C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/ov7670_sccb.sv
   C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/pointwise_filters.sv
   C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/sync.sv
+  C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/text_overlay.sv
   C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/src/top.sv
 }
 read_ip -quiet C:/Users/patsn/OneDrive/Documents/fpga-projects/fpga_real_time_video_processing_pipeline/vivado/fpga_video_processing/fpga_video_processing.srcs/sources_1/ip/blk_mem_gen_0_1/blk_mem_gen_0.xci

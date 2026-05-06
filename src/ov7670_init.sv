@@ -1,10 +1,8 @@
-
 ///////////////////////////////////////////////////////////////////////////////
 // ov7670_init.sv
 // ECE 385 Final Project - Real-Time FPGA Video Processing Pipeline
-//
 // OV7670 CAMERA CONFIGURATION SEQUENCER
-// ─────────────────────────────────────────────────────────────────────────────
+// ?????????????????????????????????????????????????????????????????????????????
 // On power-up (after reset_n de-asserts) this module:
 //   1. Waits ~50 ms for the camera to stabilise
 //   2. Issues a software reset (register 0x12 = 0x80)
@@ -12,42 +10,37 @@
 //   4. Walks through the ROM table below, sending each {reg, val} pair
 //      via ov7670_sccb, pausing ~1 ms between writes
 //   5. Asserts config_done and stays there forever
-//
 // Camera configured for:
-//   Resolution : QVGA 320×240
+//   Resolution : QVGA 320
 //   Format     : RGB565
 //   Frame rate : ~30 fps  (24 MHz XCLK, no pre-scaler)
 //   PCLK       : free-running (toggles during blanking)
-//
 // Register table built from:
-//   • Mike Field's Hamsterworks OV7670 Verilog project
-//   • westonb/OV7670-Verilog (GitHub)
-//   • Linux kernel ov7670.c driver register tables
-//
-// Timing constants (all in cam_clk cycles, cam_clk ≈ 24 MHz):
+//   
+// Mike Field's Hamsterworks OV7670 Verilog project
+//   
+// westonb/OV7670-Verilog (GitHub)
+//   
+// Linux kernel ov7670.c driver register tables
+// Timing constants (all in cam_clk cycles, cam_clk ? 24 MHz):
 //   PWRUP_DELAY  = 1_200_000   (~50  ms)
 //   RESET_DELAY  =    48_000   (~ 2  ms)
 //   REG_DELAY    =    24_000   (~ 1  ms between consecutive writes)
 ///////////////////////////////////////////////////////////////////////////////
-
 module ov7670_init (
     input  logic clk,           // ~24 MHz cam_clk_int
     input  logic reset_n,       // active-LOW reset
-
     // SCCB pins (routed through to ov7670_sccb)
     output logic sioc,
     inout  wire  siod,
-
-    output logic config_done    // stays HIGH after all registers written
-);
-
+    output logic config_done
+    );    // stays HIGH after all registers written
     // =========================================================================
     // TIMING PARAMETERS
     // =========================================================================
     localparam PWRUP_DELAY = 12_000_000;   // ~50 ms at 24 MHz
     localparam RESET_DELAY =    48_000;   // ~2 ms  at 24 MHz
     localparam REG_DELAY   =    72_000;   // ~1 ms  at 24 MHz
-
     // =========================================================================
     // REGISTER TABLE  (ROM)
     // =========================================================================
@@ -57,7 +50,7 @@ module ov7670_init (
     // PSEUDO-CODE table (fill exact values from OV7670 datasheet / reference):
     //
     //   INDEX   REG     VALUE    DESCRIPTION
-    //   [0]     0x12    0x80     Software reset  ← sent alone with extra delay
+    //   [0]     0x12    0x80     Software reset  ? sent alone with extra delay
     //   [1]     0x12    0x04     COM7:  RGB mode, QVGA output
     //   [2]     0x11    0x00     CLKRC: no pre-scaler (full 24 MHz)
     //   [3]     0x0C    0x00     COM3:  enable scaling
@@ -102,7 +95,7 @@ module ov7670_init (
     //   [39]    0x00    0x00     GAIN
     //   [40]    0x10    0x00     AECH
     //   [41]    0x0D    0x40     COM4
-    //   [42]    0x14    0x18     COM9: max gain 4×
+    //   [42]    0x14    0x18     COM9: max gain 4
     //   [43]    0xA5    0x05     BD50MAX
     //   [44]    0xAB    0x07     BD60MAX
     //   [45]    0x24    0x95     AEW  (AWB stable region upper bound)
@@ -135,14 +128,12 @@ module ov7670_init (
     //   [72]    0x6F    0x9F     AWBCTR0
     //   [73]    0x55    0x00     BRIGHT (brightness = 0, neutral)
     //   [74]    0x56    0x40     CONTRAS (contrast = 0x40, neutral)
-    //   [75]    0xFF    0xFF     ← END SENTINEL
+    //   [75]    0xFF    0xFF     ? END SENTINEL
     //
     // NOTE: Index [0] (soft-reset 0x12=0x80) is sent first with RESET_DELAY
     //       before the remaining registers.  All others use REG_DELAY.
-
-    localparam ROM_DEPTH = 78;
+    localparam ROM_DEPTH = 83;
     logic [15:0] message [0:ROM_DEPTH-1];
-
     // Initialise ROM  (synthesises as LUT/BRAM-based ROM in Vivado)
     initial begin
         // Software reset - handled separately in state machine, still placed here
@@ -212,7 +203,7 @@ module ov7670_init (
         message[58]= 16'h0000; //set gain reg to 0 for AGC
         message[59]= 16'h1000; //set ARCJ reg to 0
         message[60]= 16'h0d40; //magic reserved bit for COM4
-        message[61]= 16'h1418; //COM9, 4x gain + magic bit
+        message[61]= 16'h1408; //COM9: 2x max gain ceiling (limits noise in dark scenes)
         message[62]= 16'ha505; // BD50MAX
         message[63]= 16'hab07; //DB60MAX
         message[64]= 16'h2495; //AGC upper limit
@@ -226,12 +217,16 @@ module ov7670_init (
         message[72]= 16'ha8f0; //HAECC5
         message[73]= 16'ha990; //HAECC6
         message[74]= 16'haa94; //HAECC7
-        message[75]= 16'h13e5; //COM8, enable AGC / AEC
+        message[75]= 16'h13e5; //COM8: AGC+AEC on, AWB OFF (bit1=0) so manual gains hold
         message[76]= 16'h1E23; //Mirror Image
-        message[77]= 16'h6906; //gain of RGB(manually adjusted)
+        message[77]= 16'h6906; //GFIX
+        message[78]= 16'h0180; //blue channel gain  = 0x80 (neutral baseline)
+        message[79]= 16'h0280; //red channel gain   = 0x80 (neutral)
+        message[80]= 16'h6A20; //green channel gain = 0x20 (attenuated - green sensor oversensitive)
+        message[81]= 16'h01FF; //blue gain boost    = 0xFF (max, compensate for indoor lighting)
+        message[82]= 16'hFFFF; //END SENTINEL
     
     end
-
     // =========================================================================
     // STATE MACHINE
     // =========================================================================
@@ -245,7 +240,6 @@ module ov7670_init (
         REG_WAIT,   // inter-register delay
         CONFIG_DONE // done - stay here
     } init_state_t;
-
     init_state_t  state;
     logic [20:0]  delay_cnt;        // delay counter (21 bits covers 1.2M cycles)
     logic [6:0]   rom_idx;          // current ROM index (0..75)
@@ -254,35 +248,33 @@ module ov7670_init (
     logic [7:0]   sccb_reg_data;
     logic         sccb_done;
     logic sccb_started;
-
     // =========================================================================
     // PSEUDO-CODE:
     //
     // PWRUP:
-    //   Count PWRUP_DELAY cycles.  When done → SW_RESET.
+    //   Count PWRUP_DELAY cycles.  When done ? SW_RESET.
     //
     // SW_RESET:
     //   Pulse sccb_start=1 with reg_addr=0x12, reg_data=0x80.
-    //   Wait for sccb_done → RST_WAIT.
+    //   Wait for sccb_done ? RST_WAIT.
     //
     // RST_WAIT:
-    //   Count RESET_DELAY cycles.  When done → SEND_REG with rom_idx=1
+    //   Count RESET_DELAY cycles.  When done ? SEND_REG with rom_idx=1
     //   (skip index 0 which was the reset command we already sent).
     //
     // SEND_REG:
-    //   If rom[rom_idx] == 16'hFFFF → CONFIG_DONE.
+    //   If rom[rom_idx] == 16'hFFFF ? CONFIG_DONE.
     //   Else extract reg_addr = rom[rom_idx][15:8]
     //              reg_data  = rom[rom_idx][7:0]
-    //   Pulse sccb_start=1.  Wait for sccb_done → REG_WAIT.
+    //   Pulse sccb_start=1.  Wait for sccb_done ? REG_WAIT.
     //
     // REG_WAIT:
     //   Count REG_DELAY cycles.
-    //   rom_idx++.  → SEND_REG.
+    //   rom_idx++.  ? SEND_REG.
     //
     // CONFIG_DONE:
     //   config_done = 1.  Stay here forever.
     // =========================================================================
-
     always_ff @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin
             state       <= PWRUP;
@@ -293,7 +285,6 @@ module ov7670_init (
             sccb_started <= 1'b0;
         end else begin
             sccb_start <= 1'b0;  // default: no transaction
-
             case (state)
                 PWRUP: begin
                     // IMPLEMENT: count PWRUP_DELAY then transition to SW_RESET
@@ -304,7 +295,6 @@ module ov7670_init (
                         delay_cnt <= delay_cnt + 1;
                     end
                 end
-
                 SW_RESET: begin
                     // IMPLEMENT: send {0x12, 0x80}, wait for sccb_done
                     if (!sccb_started) begin
@@ -319,15 +309,13 @@ module ov7670_init (
                         state        <= RST_WAIT;
                     end
                 end
-
                 RST_WAIT: begin
                     if (delay_cnt == RESET_DELAY - 1) begin
                         delay_cnt <= '0;
-                        state     <= SW_RESET2;   // ← changed
+                        state     <= SW_RESET2;   // ? changed
                     end else
                         delay_cnt <= delay_cnt + 1;
                 end
-
                 SW_RESET2: begin
                     if (!sccb_started) begin
                         sccb_reg_addr <= 8'h12;
@@ -341,7 +329,6 @@ module ov7670_init (
                         state        <= RST_WAIT2;
                     end
                 end
-
                 RST_WAIT2: begin
                     if (delay_cnt == RESET_DELAY - 1) begin
                         delay_cnt <= '0;
@@ -350,7 +337,6 @@ module ov7670_init (
                     end else
                         delay_cnt <= delay_cnt + 1;
                 end
-
                 SEND_REG: begin
                     // IMPLEMENT: check sentinel, extract reg/data, trigger SCCB
                     if (message[rom_idx] == 16'hFFFF) begin
@@ -367,7 +353,6 @@ module ov7670_init (
                         state        <= REG_WAIT;
                     end
                 end
-
                 REG_WAIT: begin
                     // IMPLEMENT: count REG_DELAY, then advance rom_idx
                     if (delay_cnt == REG_DELAY - 1) begin
@@ -378,16 +363,13 @@ module ov7670_init (
                         delay_cnt <= delay_cnt + 1;
                     end
                 end
-
                 CONFIG_DONE: begin
                     config_done <= 1'b1;
                 end
-
                 default: state <= PWRUP;
             endcase
         end
     end
-
     // =========================================================================
     // SCCB CONTROLLER INSTANTIATION
     // =========================================================================
@@ -401,6 +383,6 @@ module ov7670_init (
         .sioc     (sioc),
         .siod     (siod)
     );
-
 endmodule
+
 
