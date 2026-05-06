@@ -81,38 +81,8 @@ module filter_pipeline (
     assign R8 = {fb_data[15:11], fb_data[13:11]};  // R5's own low 3 bits: bits [13:11]
     assign G8 = {fb_data[10:5],  fb_data[6:5]};    // G6's own low 2 bits: bits [6:5]
     assign B8 = {fb_data[4:0],   fb_data[2:0]};    // B5's own low 3 bits: bits [2:0]
-
-        // =========================================================================
-    // WHITE BALANCE CORRECTION
-    // Applied after RGB565 extraction, before filters.
-    // The camera sensor + indoor lighting combination produces:
-    //   R: correct  G: ~33% too bright  B: ~50% too dark
-    // Correction factors determined empirically:
-    //   R_cal = R8                  (no change)
-    //   G_cal = G8 * 0.75           (attenuate G by 25%: G*3>>2)
-    //   B_cal = min(B8 * 2, 255)    (boost B by 2x, saturate at 255)
-    // Use 10-bit intermediates to detect overflow before clamping.
-    // =========================================================================
-    // White balance correction calibrated from channel isolation test:
-    // White ceiling measured: R=medium, G=clipping(255), B=very dark(~50)
-    // G needs crushing to 0.625x: G*5>>3
-    // B needs heavy boost to 3.0x: clamped at 255
-    // R is the reference, left unchanged.
-    // White balance: G*0.625 (crush overexposed green), B*3 (boost dark blue)
-    // All arithmetic uses wide intermediates to avoid 8-bit overflow truncation.
-    // G*5 in 11 bits then [10:3] = >>3 = *0.625
-    // B*3 in 10 bits then clamp via [9] overflow bit
-    logic [10:0] G_wb;  // 11-bit: 255*5=1275 needs 11 bits
-    logic [9:0]  B_wb;  // 10-bit: 255*3=765 needs 10 bits
-    logic [7:0]  R_cal, G_cal, B_cal;
-    assign G_wb  = {2'b0, G8} * 5;                        // G*5 (11-bit, no overflow)
-    assign B_wb  = ({2'b0, B8} << 1) + {2'b0, B8};        // B*3 = B*2+B (10-bit, no overflow)
-    assign R_cal = R8;
-    assign G_cal = G_wb[10:3];                             // G*5>>3 = G*0.625
-    assign B_cal = (|B_wb[9:8]) ? 8'hFF : B_wb[7:0];      // clamp if B*3 > 255
-
     logic [23:0] rgb888;
-    assign rgb888 = {R_cal, G_cal, B_cal};
+    assign rgb888 = {R8, G8, B8};
 
     // =========================================================================
     // STEP 3 - TEST PATTERN OVERRIDE (SW[15])

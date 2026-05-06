@@ -132,7 +132,7 @@ module ov7670_init (
     //
     // NOTE: Index [0] (soft-reset 0x12=0x80) is sent first with RESET_DELAY
     //       before the remaining registers.  All others use REG_DELAY.
-    localparam ROM_DEPTH = 83;
+    localparam ROM_DEPTH = 84;
     logic [15:0] message [0:ROM_DEPTH-1];
     // Initialise ROM  (synthesises as LUT/BRAM-based ROM in Vivado)
     initial begin
@@ -151,13 +151,13 @@ module ov7670_init (
         message[9]= 16'h40d0; //COM15,     RGB565, full output range
         message[10]= 16'h3a04; //TSLB       set correct output data sequence (magic)
         message[11]= 16'h1418; //COM9       MAX AGC value x4 0001_1000
-        message[12]= 16'h4FB3; //MTX1       all of these are magical matrix coefficients
-        message[13]= 16'h50B3; //MTX2
+        message[12]= 16'h4F80; //MTX1  - correct OV7670 RGB color matrix
+        message[13]= 16'h5080; //MTX2
         message[14]= 16'h5100; //MTX3
-        message[15]= 16'h523d; //MTX4
-        message[16]= 16'h53A7; //MTX5
-        message[17]= 16'h54E4; //MTX6
-        message[18]= 16'h589E; //MTXS
+        message[15]= 16'h5222; //MTX4
+        message[16]= 16'h535E; //MTX5
+        message[17]= 16'h5480; //MTX6
+        message[18]= 16'h589E; //MTXS - sign bits: MTX5 and MTX4 are negative
         message[19]= 16'h3DC0; //COM13      sets gamma enable, does not preserve reserved bits, may be wrong?
         message[20]= 16'h1714; //HSTART     start high 8 bits
         message[21]= 16'h1802; //HSTOP      stop high 8 bits //these kill the odd colored line
@@ -199,8 +199,8 @@ module ov7670_init (
         message[55]= 16'h88d7;
         message[56]= 16'h89e8;
         //AGC and AEC
-        message[57]= 16'h13e0; //COM8, disable AGC / AEC
-        message[58]= 16'h0000; //set gain reg to 0 for AGC
+        message[57]= 16'h13e0; //COM8: temporarily disable AGC/AEC/AWB to write gain regs cleanly
+        message[58]= 16'h0040; //GAIN reg: start at a reasonable mid-level (not 0 = pitch black)
         message[59]= 16'h1000; //set ARCJ reg to 0
         message[60]= 16'h0d40; //magic reserved bit for COM4
         message[61]= 16'h1408; //COM9: 2x max gain ceiling (limits noise in dark scenes)
@@ -217,15 +217,15 @@ module ov7670_init (
         message[72]= 16'ha8f0; //HAECC5
         message[73]= 16'ha990; //HAECC6
         message[74]= 16'haa94; //HAECC7
-        message[75]= 16'h13e5; //COM8: AGC+AEC on, AWB OFF (bit1=0) so manual gains hold
+        message[75]= 16'h13e7; //COM8: AGC+AEC+AWB all ON - AWB adapts to lighting automatically
         message[76]= 16'h1E23; //Mirror Image
-        message[77]= 16'h6906; //GFIX
-        message[78]= 16'h0180; //blue channel gain  = 0x80 (neutral baseline)
-        message[79]= 16'h0280; //red channel gain   = 0x80 (neutral)
-        message[80]= 16'h6A20; //green channel gain = 0x20 (attenuated - green sensor oversensitive)
-        message[81]= 16'h01FF; //blue gain boost    = 0xFF (max, compensate for indoor lighting)
-        message[82]= 16'hFFFF; //END SENTINEL
-    
+        message[77]= 16'h6900; //GFIX = 0x00: no fixed gain bias
+        message[78]= 16'h1470; //COM9: max AGC gain = 128x ceiling
+        message[79]= 16'h0180; //BLUE gain = 0x80 neutral (AWB adjusts from here)
+        message[80]= 16'h0280; //RED  gain = 0x80 neutral (AWB adjusts from here)
+        message[81]= 16'h4118; //COM16: enable de-noise auto-adjust (bit4) + AWB gain enable (bit3)
+        message[82]= 16'h4C10; //DNSTH: de-noise threshold = 0x10 (moderate, reduces green/blue speckle)
+        message[83]= 16'hFFFF; //END SENTINEL
     end
     // =========================================================================
     // STATE MACHINE
@@ -384,5 +384,3 @@ module ov7670_init (
         .siod     (siod)
     );
 endmodule
-
-
