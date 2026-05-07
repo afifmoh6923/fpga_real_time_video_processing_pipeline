@@ -141,24 +141,24 @@ module ov7670_init (
         message[2]  = 16'h40D0; // COM15:   RGB565 format, full output range
         message[3]  = 16'h8C00; // RGB444:  Disabled
         message[4]  = 16'h1510; // COM10:   PCLK free-running
-        message[5]  = 16'h1101; // CLKRC:   Prescaler divide by 2 (keeps data eye wide)
+        message[5]  = 16'h1100; // CLKRC:   Prescaler divide by 2 (keeps data eye wide)
         message[6]  = 16'h0C00; // COM3:    Disable scaling completely!
         message[7]  = 16'h3E00; // COM14:   Normal PCLK, no manual scaling
         message[8]  = 16'h0400;  // COM1:    Disable CCIR656
         message[9]  = 16'h3A04;  // TSLB:    Correct RGB byte output sequence
-        message[10] = 16'h0903;  // COM2:    4x I/O drive strength
+        message[10] = 16'h0901;  // COM2:    4x I/O drive strength
  
         // Color matrix
-        message[11] = 16'h4F80;  // MTX1
-        message[12] = 16'h5080;  // MTX2
-        message[13] = 16'h5100;  // MTX3
-        message[14] = 16'h5222;  // MTX4
-        message[15] = 16'h535E;  // MTX5
-        message[16] = 16'h5480;  // MTX6
-        message[17] = 16'h589E;  // MTXS:    MTX4 and MTX5 are negative
+        message[11] = 16'h4F98;  // MTX1
+        message[12] = 16'h5068;  // MTX2
+        message[13] = 16'h5108;  // MTX3
+        message[14] = 16'h5216;  // MTX4
+        message[15] = 16'h5310;  // MTX5
+        message[16] = 16'h5476;  // MTX6
+        message[17] = 16'h589E;  // MTXS:    
  
         // Window / timing
-        message[18] = 16'h3D00;  // COM13:   off
+        message[18] = 16'h3D80;  // COM13:   on
         message[19] = 16'h1716;  // HSTART
         message[20] = 16'h1804;  // HSTOP
         message[21] = 16'h3280;  // HREF:    Edge offset
@@ -206,7 +206,7 @@ module ov7670_init (
         message[55] = 16'h0040;  // GAIN:    Initial mid-level gain
         message[56] = 16'h1000;  // AECH:    AEC high bits = 0
         message[57] = 16'h0D40;  // COM4:    Magic reserved bit
-        message[58] = 16'h1408;  // COM9:    2x max AGC gain ceiling
+        message[58] = 16'h1400;  // COM9:    2x max AGC gain ceiling
         message[59] = 16'hA505;  // BD50MAX
         message[60] = 16'hAB07;  // BD60MAX
         message[61] = 16'h9F78;  // HAECC1
@@ -223,9 +223,9 @@ module ov7670_init (
         message[70] = 16'h1E23;  // MVFP:    Mirror image
         message[71] = 16'h690C;  // GFIX:    Fixed gain bias = 0x06
         message[72] = 16'h0160;  // BLUE:    Neutral AWB start point
-        message[73] = 16'h0288;  // RED:     Neutral AWB start point
-        message[74] = 16'h4108;  // COM16:   AWB gain enable only
-        message[75] = 16'h4C22;  // DNSTH:   De-noise off
+        message[73] = 16'h02C0;  // RED:     Neutral AWB start point
+        message[74] = 16'h4118;  // COM16:   AWB gain enable only
+        message[75] = 16'h4C88;  // DNSTH:   De-noise on
  
         // AWB controllers
         message[76] = 16'h6C0A;  // AWBCTR3
@@ -244,7 +244,7 @@ module ov7670_init (
         message[85] = 16'h4525;  // AWBC3
         message[86] = 16'h4620;  // AWBC4
         message[87] = 16'h4757;  // AWBC5
-        message[88] = 16'h5590; // BRIGHT: Apply negative brightness offset (-16) to crush shadow noise
+        message[88] = 16'h5500; // BRIGHT: Apply negative brightness offset (-16) to crush shadow noise
         message[89] = 16'h5655; // CONTRAS: Boost contrast (1.25x) to keep highlights bright
         message[90] = 16'h0C00; // COM3:    Force scaling OFF
         message[91] = 16'h1204; // COM7:    Force VGA and RGB output mode

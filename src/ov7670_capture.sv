@@ -50,7 +50,7 @@ module ov7670_capture (
             end else begin
                 // If colors are still slightly off after fixing COM15, 
                 // flip the high_byte and cam_data order here!
-                wr_data  <= {cam_data[7:0], high_byte[7:0]};
+                wr_data  <= {high_byte[7:0], cam_data[7:0]};
                 if ((col[0] == 1'b0) && (row[0] == 1'b0)) begin
                     // Math: (row / 2) * 320 + (col / 2)
                     wr_addr <= ({8'b0, row[9:1]} << 8) + ({8'b0, row[9:1]} << 6) + {7'b0, col[9:1]};

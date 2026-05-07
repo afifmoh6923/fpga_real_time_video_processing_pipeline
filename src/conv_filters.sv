@@ -156,7 +156,7 @@ module edge_detect (
     output logic        pvalid_out
 );
     // Threshold: lower = more edges (noisier), higher = fewer edges (cleaner)
-    localparam [8:0] THRESHOLD = 9'd30;
+    localparam [8:0] THRESHOLD = 9'd100;
 
     logic [23:0] row0, row1, row2;
     line_buffer #(.WIDTH(320), .DATA_WIDTH(24)) lb (
@@ -228,11 +228,7 @@ module edge_detect (
                 // Subtract edge strength from each color channel so edges
                 // appear as dark outlines on the original colour image,
                 // matching the effect seen when all filters are layered.
-                rgb_out <= {
-                    (rgb_d2[23:16] > mag) ? rgb_d2[23:16] - mag : 8'h00,
-                    (rgb_d2[15:8]  > mag) ? rgb_d2[15:8]  - mag : 8'h00,
-                    (rgb_d2[7:0]   > mag) ? rgb_d2[7:0]   - mag : 8'h00
-                };
+                rgb_out <= (mag == 8'hFF) ? 24'hFFFFFF : rgb_d2;
             else
                 rgb_out <= rgb_d2;
         end
