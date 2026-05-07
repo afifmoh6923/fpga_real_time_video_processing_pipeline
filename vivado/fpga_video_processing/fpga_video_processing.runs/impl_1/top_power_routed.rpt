@@ -1,7 +1,7 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2025.1 (win64) Build 6140274 Thu May 22 00:12:29 MDT 2025
-| Date             : Thu May  7 13:20:18 2026
+| Date             : Thu May  7 15:42:46 2026
 | Host             : afiflaptop running 64-bit major release  (build 9200)
 | Command          : report_power -file top_power_routed.rpt -pb top_power_summary_routed.pb -rpx top_power_routed.rpx
 | Design           : top
@@ -53,15 +53,15 @@ Table of Contents
 | On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
 +--------------------------+-----------+----------+-----------+-----------------+
 | Clocks                   |     0.005 |       13 |       --- |             --- |
-| Slice Logic              |     0.008 |    11603 |       --- |             --- |
-|   LUT as Logic           |     0.007 |     5915 |     32600 |           18.14 |
+| Slice Logic              |     0.008 |    11618 |       --- |             --- |
+|   LUT as Logic           |     0.007 |     5917 |     32600 |           18.15 |
 |   LUT as Distributed RAM |    <0.001 |     1280 |      9600 |           13.33 |
-|   Register               |    <0.001 |     2268 |     65200 |            3.48 |
+|   Register               |    <0.001 |     2274 |     65200 |            3.49 |
 |   CARRY4                 |    <0.001 |      588 |      8150 |            7.21 |
 |   F7/F8 Muxes            |    <0.001 |      196 |     32600 |            0.60 |
 |   LUT as Shift Register  |    <0.001 |       20 |      9600 |            0.21 |
 |   Others                 |     0.000 |      182 |       --- |             --- |
-| Signals                  |     0.009 |     9782 |       --- |             --- |
+| Signals                  |     0.009 |     9790 |       --- |             --- |
 | Block RAM                |     0.007 |       36 |        75 |           48.00 |
 | MMCM                     |     0.111 |        1 |         5 |           20.00 |
 | DSPs                     |    <0.001 |        3 |       120 |            2.50 |

@@ -228,7 +228,7 @@ module edge_detect (
                 // Subtract edge strength from each color channel so edges
                 // appear as dark outlines on the original colour image,
                 // matching the effect seen when all filters are layered.
-                rgb_out <= (mag == 8'hFF) ? 24'hFFFFFF : rgb_d2;
+                rgb_out <= (mag > THRESHOLD) ? 24'hFFFFFF : rgb_d2;
             else
                 rgb_out <= rgb_d2;
         end

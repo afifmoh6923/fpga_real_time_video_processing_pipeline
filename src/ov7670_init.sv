@@ -132,7 +132,7 @@ module ov7670_init (
     //
     // NOTE: Index [0] (soft-reset 0x12=0x80) is sent first with RESET_DELAY
     //       before the remaining registers.  All others use REG_DELAY.
-    localparam ROM_DEPTH = 95;
+    localparam ROM_DEPTH = 97;
     logic [15:0] message [0:ROM_DEPTH-1];
     // Initialise ROM  (synthesises as LUT/BRAM-based ROM in Vivado)
     initial begin
@@ -150,7 +150,7 @@ module ov7670_init (
  
         // Color matrix
         message[11] = 16'h4F40;  // MTX1
-        message[12] = 16'h5034;  // MTX2
+        message[12] = 16'h5030;  // MTX2
         message[13] = 16'h510C;  // MTX3
         message[14] = 16'h5217;  // MTX4
         message[15] = 16'h5329;  // MTX5
@@ -174,7 +174,7 @@ module ov7670_init (
         message[29] = 16'hB084;  // RSVD:    Required for good color
         message[30] = 16'hB10C;  // ABLC1
         message[31] = 16'hB20E;  // RSVD
-        message[32] = 16'hB380;  // THL_ST
+        message[32] = 16'hB382;  // THL_ST
  
         // Scaling
         message[33] = 16'h703A;  // SCALING_XSC
@@ -202,11 +202,11 @@ module ov7670_init (
         message[53] = 16'h89E8;  // GAM15
  
         // AGC/AEC: disable, write registers, re-enable
-        message[54] = 16'h13E0;  // COM8:    Disable AGC, AEC, AWB
+        message[54] = 16'h1300;  // COM8:     Disable AGC, AEC, AWB
         message[55] = 16'h0040;  // GAIN:    Initial mid-level gain
         message[56] = 16'h1000;  // AECH:    AEC high bits = 0
         message[57] = 16'h0D40;  // COM4:    Magic reserved bit
-        message[58] = 16'h1400;  // COM9:    2x max AGC gain ceiling
+        message[58] = 16'h1418;  // COM9:    2x max AGC gain ceiling
         message[59] = 16'hA505;  // BD50MAX
         message[60] = 16'hAB07;  // BD60MAX
         message[61] = 16'h9F78;  // HAECC1
@@ -222,9 +222,9 @@ module ov7670_init (
         // Post-enable tuning
         message[70] = 16'h1E23;  // MVFP:    Mirror image
         message[71] = 16'h690C;  // GFIX:    Fixed gain bias = 0x06
-        message[72] = 16'h0160;  // BLUE:    Neutral AWB start point
-        message[73] = 16'h02C0;  // RED:     Neutral AWB start point
-        message[74] = 16'h4118;  // COM16:   AWB gain enable only
+        message[72] = 16'h0150;  // BLUE:    Neutral AWB start point
+        message[73] = 16'h0260;  // RED:     Neutral AWB start point
+        message[74] = 16'h4108;  // COM16:   AWB gain enable only
         message[75] = 16'h4C88;  // DNSTH:   De-noise on
  
         // AWB controllers
@@ -250,7 +250,9 @@ module ov7670_init (
         message[91] = 16'h1204; // COM7:    Force VGA and RGB output mode
         message[92] = 16'h40D0; // COM15:   Force RGB565 format
         message[93] = 16'h8C00; // RGB444:  Ensure RGB444 is completely disabled
-        message[94] = 16'hFFFF; // END SENTINEL
+        message[94] = 16'h6B4A; //DBLV
+        message[95] = 16'h7410; //Digit
+        message[96] = 16'hFFFF; // END SENTINEL
     end
     // =========================================================================
     // STATE MACHINE

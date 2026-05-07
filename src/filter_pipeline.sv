@@ -78,9 +78,9 @@ module filter_pipeline (
     //   B8 = {fb_data[4:0],   fb_data[4:2]}
     //   rgb888 = {R8, G8, B8}
     logic [7:0] R8, G8, B8;
-    assign R8 = {fb_data[15:11], fb_data[13:11]};  // R5's own low 3 bits: bits [13:11]
-    assign G8 = {fb_data[10:5],  fb_data[6:5]};    // G6's own low 2 bits: bits [6:5]
-    assign B8 = {fb_data[4:0],   fb_data[2:0]};    // B5's own low 3 bits: bits [2:0]
+    assign R8 = {fb_data[15:11], fb_data[15:13]};  // R5's own low 3 bits: bits [13:11]
+    assign G8 = {fb_data[10:5],  fb_data[10:9]};    // G6's own low 2 bits: bits [6:5]
+    assign B8 = {fb_data[4:0],   fb_data[4:2]};    // B5's own low 3 bits: bits [2:0]
     logic [23:0] rgb888;
     assign rgb888 = {R8, G8, B8};
 
@@ -100,7 +100,7 @@ module filter_pipeline (
     //     7: Black   (000000)
     logic [23:0] test_pattern;
     always_comb begin
-        case (drawX/80)
+        case ((drawX-10'd60)/40)
             3'd0: test_pattern = 24'hFFFFFF;
             3'd1: test_pattern = 24'hFFFF00;
             3'd2: test_pattern = 24'h00FFFF;
