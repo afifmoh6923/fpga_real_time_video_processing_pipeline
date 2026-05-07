@@ -293,3 +293,13 @@
     <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="37632" HostCore="16" HostMemory="016312553472">
     </Process>
 </ProcessHandle>
+<?xml version="1.0"?>
+<ProcessHandle Version="1" Minor="0">
+    <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="15440" HostCore="16" HostMemory="016312553472">
+    </Process>
+</ProcessHandle>
+<?xml version="1.0"?>
+<ProcessHandle Version="1" Minor="0">
+    <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="30852" HostCore="16" HostMemory="016312553472">
+    </Process>
+</ProcessHandle>

@@ -149,12 +149,12 @@ module ov7670_init (
         message[10] = 16'h0901;  // COM2:    4x I/O drive strength
  
         // Color matrix
-        message[11] = 16'h4F98;  // MTX1
-        message[12] = 16'h5068;  // MTX2
-        message[13] = 16'h5108;  // MTX3
-        message[14] = 16'h5216;  // MTX4
-        message[15] = 16'h5310;  // MTX5
-        message[16] = 16'h5476;  // MTX6
+        message[11] = 16'h4F40;  // MTX1
+        message[12] = 16'h5034;  // MTX2
+        message[13] = 16'h510C;  // MTX3
+        message[14] = 16'h5217;  // MTX4
+        message[15] = 16'h5329;  // MTX5
+        message[16] = 16'h5440;  // MTX6
         message[17] = 16'h589E;  // MTXS:    
  
         // Window / timing
@@ -245,7 +245,7 @@ module ov7670_init (
         message[86] = 16'h4620;  // AWBC4
         message[87] = 16'h4757;  // AWBC5
         message[88] = 16'h5500; // BRIGHT: Apply negative brightness offset (-16) to crush shadow noise
-        message[89] = 16'h5655; // CONTRAS: Boost contrast (1.25x) to keep highlights bright
+        message[89] = 16'h5640; // CONTRAS: Boost contrast (1.25x) to keep highlights bright
         message[90] = 16'h0C00; // COM3:    Force scaling OFF
         message[91] = 16'h1204; // COM7:    Force VGA and RGB output mode
         message[92] = 16'h40D0; // COM15:   Force RGB565 format
