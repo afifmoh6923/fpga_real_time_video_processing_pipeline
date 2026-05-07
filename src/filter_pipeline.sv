@@ -77,12 +77,32 @@ module filter_pipeline (
     //   G8 = {fb_data[10:5],  fb_data[10:9]}
     //   B8 = {fb_data[4:0],   fb_data[4:2]}
     //   rgb888 = {R8, G8, B8}
-    logic [7:0] R8, G8, B8;
-    assign R8 = {fb_data[15:11], fb_data[15:13]};  // R5's own low 3 bits: bits [13:11]
-    assign G8 = {fb_data[10:5],  fb_data[10:9]};    // G6's own low 2 bits: bits [6:5]
-    assign B8 = {fb_data[4:0],   fb_data[4:2]};    // B5's own low 3 bits: bits [2:0]
+    logic [7:0] R8, G8, B8, G8_attenuated;
+    
+    assign R8 = {fb_data[15:11], fb_data[15:13]};
+    assign G8 = {fb_data[10:5],  fb_data[10:9]};
+    assign B8 = {fb_data[4:0],   fb_data[4:2]};
+    
+    // Subtract 12.5% of the green intensity to suppress the noise floor
+    assign G8_attenuated = G8 - (G8 >> 3); 
+    
     logic [23:0] rgb888;
-    assign rgb888 = {R8, G8, B8};
+    assign rgb888 = {R8, G8_attenuated, B8};
+
+    logic [23:0] rgb888_clean;
+    always_comb begin
+        rgb888_clean = rgb888; // Default: pass the pixel through unchanged
+
+        // 1. "Green Spark" Killer: If Green is 40 levels brighter than BOTH Red and Blue
+        if (rgb888[15:8] > (rgb888[23:16] + 8'd40) && rgb888[15:8] > (rgb888[7:0] + 8'd40)) begin
+            // Average the Red and Blue channels to replace the green spark
+            rgb888_clean[15:8] = (rgb888[23:16] >> 1) + (rgb888[7:0] >> 1);
+        end 
+        // 2. "Dark Noise" Killer: Crush low-level blue/green static in shadows
+        else if (rgb888[23:16] < 8'd25 && rgb888[15:8] < 8'd25 && rgb888[7:0] < 8'd35) begin
+            rgb888_clean = 24'h000000; // Force to pure black
+        end
+    end
 
     // =========================================================================
     // STEP 3 - TEST PATTERN OVERRIDE (SW[15])
@@ -136,7 +156,7 @@ module filter_pipeline (
     // Update STEP 3: Draw black if we are outside the 320x240 window
     logic [23:0] source_rgb;
     assign source_rgb = SW[15] ? (active_nblank ? test_pattern : 24'h000000) : 
-                                 (in_window ? rgb888 : 24'h000000);
+                                 (in_window ? rgb888_clean : 24'h000000);
     // pixel_valid: active video indicator
     logic pixel_valid;
     assign pixel_valid = active_nblank;
