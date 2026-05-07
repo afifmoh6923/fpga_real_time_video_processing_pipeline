@@ -1,7 +1,7 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 -----------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2025.1 (win64) Build 6140274 Thu May 22 00:12:29 MDT 2025
-| Date         : Wed May  6 17:38:40 2026
+| Date         : Thu May  7 11:11:45 2026
 | Host         : afiflaptop running 64-bit major release  (build 9200)
 | Command      : report_methodology -file top_methodology_drc_routed.rpt -pb top_methodology_drc_routed.pb -rpx top_methodology_drc_routed.rpx
 | Design       : top
@@ -63,7 +63,7 @@ Related violations: <none>
 
 LUTAR-1#1 Warning
 LUT drives async reset alert  
-LUT cell cam_init/sccb_ctrl/FSM_sequential_state[3]_i_3, with 2 or more inputs, drives asynchronous preset/clear pin(s) cam_init/rom_idx_reg_rep[5]/CLR, cam_init/rom_idx_reg_rep[6]/CLR,
+LUT cell cam_init/sccb_ctrl/done_i_2, with 2 or more inputs, drives asynchronous preset/clear pin(s) cam_init/rom_idx_reg_rep[5]/CLR, cam_init/rom_idx_reg_rep[6]/CLR,
 cam_init/rom_idx_reg_rep_rep[0]/CLR, cam_init/rom_idx_reg_rep_rep[1]/CLR,
 cam_init/rom_idx_reg_rep_rep[2]/CLR, cam_init/rom_idx_reg_rep_rep[3]/CLR,
 cam_init/rom_idx_reg_rep_rep[4]/CLR, cam_init/rom_idx_reg_rep_rep[5]/CLR,

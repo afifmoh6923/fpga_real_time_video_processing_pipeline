@@ -146,6 +146,15 @@ logic clk_locked;
     //         Output clk_out1 ? pixel_clk
     //         Output clk_out2 ? tmds_clk
     //         Output clk_out3 ? cam_clk_int
+    // Create a wire for the buffered, zero-skew camera clock
+    logic cam_pclk_buf;
+
+    // Force the raw camera clock onto the Global Clock Network
+    BUFG bufg_cam_pclk (
+        .I(cam_pclk),       // Raw, noisy clock coming from the Pmod pin (H16)
+        .O(cam_pclk_buf)    // Clean, zero-skew clock to use everywhere else
+    );
+
     clk_wiz_0 clk_gen (
         .clk_in1  (Clk),
         .clk_out1 (pixel_clk),
@@ -203,7 +212,7 @@ logic clk_locked;
     // Runs entirely in cam_pclk domain - outputs go straight to BRAM port A.
     // =========================================================================
     ov7670_capture capture (
-        .cam_pclk  (cam_pclk),
+        .cam_pclk  (cam_pclk_buf),
         .cam_vsync (cam_vsync),
         .cam_href  (cam_href),
         .cam_data  (cam_data),
@@ -244,7 +253,7 @@ logic clk_locked;
 
     blk_mem_gen_0 frame_buffer (
         // Write port - camera clock domain
-        .clka  (cam_pclk),
+        .clka  (cam_pclk_buf),
         .wea   (fb_wr_en),
         .addra (fb_wr_addr),
         .dina  (fb_wr_data),

@@ -169,14 +169,15 @@ set_property -dict {PACKAGE_PIN V17 IOSTANDARD TMDS_33} [get_ports hdmi_tmds_clk
 # CLOCK ROUTING OVERRIDES
 ###############################################################################
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets cam_pclk_IBUF]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_gen/inst/clk_in1]
+#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_gen/inst/clk_in1]
+#set_property CLOCK_REGION X0Y2 [get_cells capture/*]
 
 
 ###############################################################################
 # CLOCK DOMAIN CROSSING
 ###############################################################################
 set_clock_groups -asynchronous \
-    -group [get_clocks sys_clk_pin] \
+    -group [get_clocks -include_generated_clocks sys_clk_pin] \
     -group [get_clocks cam_pclk_clk]
 
 

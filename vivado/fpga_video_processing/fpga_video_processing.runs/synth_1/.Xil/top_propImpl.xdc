@@ -113,5 +113,3 @@ set_property src_info {type:XDC file:1 line:165 export:INPUT save:INPUT read:REA
 set_property -dict {PACKAGE_PIN V17 IOSTANDARD TMDS_33} [get_ports hdmi_tmds_clk_n]
 set_property src_info {type:XDC file:1 line:171 export:INPUT save:INPUT read:READ} [current_design]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets cam_pclk_IBUF]
-set_property src_info {type:XDC file:1 line:172 export:INPUT save:INPUT read:READ} [current_design]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets clk_gen/inst/clk_in1]
