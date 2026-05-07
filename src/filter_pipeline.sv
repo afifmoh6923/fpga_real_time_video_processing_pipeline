@@ -84,23 +84,27 @@ module filter_pipeline (
     assign B8 = {fb_data[4:0],   fb_data[4:2]};
     
     // Subtract 12.5% of the green intensity to suppress the noise floor
-    assign G8_attenuated = G8 - (G8 >> 3); 
+    assign G8_attenuated = G8 - (G8 >> 2); 
     
     logic [23:0] rgb888;
+    
     assign rgb888 = {R8, G8_attenuated, B8};
 
     logic [23:0] rgb888_clean;
     always_comb begin
         rgb888_clean = rgb888; // Default: pass the pixel through unchanged
 
-        // 1. "Green Spark" Killer: If Green is 40 levels brighter than BOTH Red and Blue
-        if (rgb888[15:8] > (rgb888[23:16] + 8'd40) && rgb888[15:8] > (rgb888[7:0] + 8'd40)) begin
-            // Average the Red and Blue channels to replace the green spark
-            rgb888_clean[15:8] = (rgb888[23:16] >> 1) + (rgb888[7:0] >> 1);
-        end 
-        // 2. "Dark Noise" Killer: Crush low-level blue/green static in shadows
+        if (rgb888[15:8] > (rgb888[23:16] + 8'd20) && rgb888[15:8] > (rgb888[7:0] + 8'd20)) begin
+            // Force Green to match the Red level
+            rgb888_clean[15:8] = rgb888[23:16];
+        end
+        // BLUE SHADOW HEALER: Fixes blue static in your hair/shadows
+        else if (rgb888[7:0] > (rgb888[23:16] + 8'd20) && rgb888[23:16] < 8'd100) begin
+            rgb888_clean[7:0] = rgb888[23:16];
+        end
+        // Thermal Noise Gate: Crush background static to pure black
         else if (rgb888[23:16] < 8'd25 && rgb888[15:8] < 8'd25 && rgb888[7:0] < 8'd35) begin
-            rgb888_clean = 24'h000000; // Force to pure black
+            rgb888_clean = 24'h000000;
         end
     end
 

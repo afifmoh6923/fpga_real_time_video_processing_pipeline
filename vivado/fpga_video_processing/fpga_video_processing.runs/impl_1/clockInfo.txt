@@ -1,6 +1,6 @@
 -------------------------------------
 | Tool Version : Vivado v.2025.1
-| Date         : Thu May  7 15:55:44 2026
+| Date         : Thu May  7 18:51:32 2026
 | Host         : afiflaptop
 | Design       : design_1
 | Device       : xc7s50-csga324-1--

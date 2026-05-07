@@ -222,21 +222,21 @@ module ov7670_init (
         // Post-enable tuning
         message[70] = 16'h1E23;  // MVFP:    Mirror image
         message[71] = 16'h690C;  // GFIX:    Fixed gain bias = 0x06
-        message[72] = 16'h0150;  // BLUE:    Neutral AWB start point
-        message[73] = 16'h0260;  // RED:     Neutral AWB start point
+        message[72] = 16'h0180;  // BLUE:    Neutral AWB start point
+        message[73] = 16'h0240;  // RED:     Neutral AWB start point
         message[74] = 16'h4108;  // COM16:   AWB gain enable only
-        message[75] = 16'h4C88;  // DNSTH:   De-noise on
+        message[75] = 16'h4CC0;  // DNSTH:   De-noise on
  
         // AWB controllers
         message[76] = 16'h6C0A;  // AWBCTR3
         message[77] = 16'h6D55;  // AWBCTR2
         message[78] = 16'h6E11;  // AWBCTR1
-        message[79] = 16'h6F9F;  // AWBCTR0
+        message[79] = 16'h6F9C;  // AWBCTR0
  
         // AEC stable region (tightened for indoor lighting)
-        message[80] = 16'h2460;  // AEW:     Upper bound
-        message[81] = 16'h2550;  // AEB:     Lower bound
-        message[82] = 16'h26A5;  // VPT:     Fast mode region
+        message[80] = 16'h2450;  // AEW:     Upper bound
+        message[81] = 16'h2540;  // AEB:     Lower bound
+        message[82] = 16'h26A1;  // VPT:     Fast mode region
  
         // AWB coefficients
         message[83] = 16'h43F0;  // AWBC1
@@ -244,7 +244,7 @@ module ov7670_init (
         message[85] = 16'h4525;  // AWBC3
         message[86] = 16'h4620;  // AWBC4
         message[87] = 16'h4757;  // AWBC5
-        message[88] = 16'h5500; // BRIGHT: Apply negative brightness offset (-16) to crush shadow noise
+        message[88] = 16'h5510; // BRIGHT: Apply negative brightness offset (-16) to crush shadow noise
         message[89] = 16'h5640; // CONTRAS: Boost contrast (1.25x) to keep highlights bright
         message[90] = 16'h0C00; // COM3:    Force scaling OFF
         message[91] = 16'h1204; // COM7:    Force VGA and RGB output mode

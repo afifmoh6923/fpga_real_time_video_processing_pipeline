@@ -155,8 +155,8 @@ module edge_detect (
     output logic [23:0] rgb_out,
     output logic        pvalid_out
 );
-    // Threshold: lower = more edges (noisier), higher = fewer edges (cleaner)
-    localparam [8:0] THRESHOLD = 9'd100;
+    // Increased threshold to ignore background "static"
+    localparam [8:0] THRESHOLD = 9'd180; 
 
     logic [23:0] row0, row1, row2;
     line_buffer #(.WIDTH(320), .DATA_WIDTH(24)) lb (
@@ -178,59 +178,43 @@ module edge_detect (
         end
     end
 
-    // Convert each 3x3 pixel to luma Y = (77R + 150G + 29B) >> 8
-    // Saves DSP vs doing Sobel on all 3 channels separately
-    function automatic [7:0] luma(input logic [23:0] px);
+    // NEW CLEAN LUMA: Weighs Red at 80% to avoid Green/Blue noise sparks
+    function automatic [7:0] clean_luma(input logic [23:0] px);
         logic [15:0] y;
-        y = (8'd77  * px[23:16])
-          + (8'd150 * px[15:8])
-          + (8'd29  * px[7:0]);
-        luma = y[15:8];
+        y = (8'd200 * px[23:16])  // 80% Red (Cleanest)
+          + (8'd40  * px[15:8])   // 15% Green
+          + (8'd16  * px[7:0]);   // 5%  Blue
+        clean_luma = y[15:8];
     endfunction
 
     logic [7:0] g00,g01,g02, g10,g11,g12, g20,g21,g22;
-    assign g00 = luma(p_r0[1]); assign g01 = luma(p_r0[0]); assign g02 = luma(row0);
-    assign g10 = luma(p_r1[1]); assign g11 = luma(p_r1[0]); assign g12 = luma(row1);
-    assign g20 = luma(p_r2[1]); assign g21 = luma(p_r2[0]); assign g22 = luma(row2);
+    assign g00 = clean_luma(p_r0[1]); assign g01 = clean_luma(p_r0[0]); assign g02 = clean_luma(row0);
+    assign g10 = clean_luma(p_r1[1]); assign g11 = clean_luma(p_r1[0]); assign g12 = clean_luma(row1);
+    assign g20 = clean_luma(p_r2[1]); assign g21 = clean_luma(p_r2[0]); assign g22 = clean_luma(row2);
 
-    // Sobel gradients (signed 12-bit)
+    // Sobel gradients
     logic signed [11:0] Gx, Gy;
     assign Gx = ($signed({4'b0,g02}) - $signed({4'b0,g00}))
-              + ($signed({3'b0,g12,1'b0}) - $signed({3'b0,g10,1'b0}))
+              + ($signed({3'b0,g12,1'b1}) - $signed({3'b0,g10,1'b1})) // Weighted center
               + ($signed({4'b0,g22}) - $signed({4'b0,g20}));
     assign Gy = ($signed({4'b0,g20}) - $signed({4'b0,g00}))
-              + ($signed({3'b0,g21,1'b0}) - $signed({3'b0,g01,1'b0}))
+              + ($signed({3'b0,g21,1'b1}) - $signed({3'b0,g01,1'b1}))
               + ($signed({4'b0,g22}) - $signed({4'b0,g02}));
 
-    logic [11:0] abs_Gx, abs_Gy;
-    assign abs_Gx = Gx[11] ? (~Gx + 1) : Gx;
-    assign abs_Gy = Gy[11] ? (~Gy + 1) : Gy;
+    logic [11:0] abs_grad;
+    assign abs_grad = (Gx[11] ? (~Gx + 1) : Gx) + (Gy[11] ? (~Gy + 1) : Gy);
 
-    // Double the magnitude so faint edges become visible, then threshold
-    // mag_scaled max = 2 * 2040 = 4080, needs 12 bits
-    logic [11:0] mag_scaled;
-    logic [7:0]  mag;
-    assign mag_scaled = (abs_Gx + abs_Gy) << 1;
-    assign mag = (mag_scaled > {3'b0, THRESHOLD}) ? 8'hFF : 8'h00;
-
-    logic [23:0] rgb_d1, rgb_d2;
-    logic        pv_d1,  pv_d2;
     always_ff @(posedge clk) begin
         if (reset) begin
-            rgb_out<=24'h0; pvalid_out<=1'b0;
-            rgb_d1<=24'h0; rgb_d2<=24'h0;
-            pv_d1<=1'b0; pv_d2<=1'b0;
+            rgb_out    <= 24'h0;
+            pvalid_out <= 1'b0;
         end else begin
-            rgb_d1<=rgb_in; rgb_d2<=rgb_d1;
-            pv_d1<=pixel_valid; pv_d2<=pv_d1;
-            pvalid_out<=pv_d2;
+            pvalid_out <= pixel_valid;
             if (enable)
-                // Subtract edge strength from each color channel so edges
-                // appear as dark outlines on the original colour image,
-                // matching the effect seen when all filters are layered.
-                rgb_out <= (mag > THRESHOLD) ? 24'hFFFFFF : rgb_d2;
+                // Draw white only for VERY strong object edges
+                rgb_out <= (abs_grad > THRESHOLD) ? 24'hFFFFFF : 24'h000000;
             else
-                rgb_out <= rgb_d2;
+                rgb_out <= rgb_in;
         end
     end
 endmodule
