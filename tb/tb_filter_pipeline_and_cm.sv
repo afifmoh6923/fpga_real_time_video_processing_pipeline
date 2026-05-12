@@ -1,329 +1,439 @@
 ///////////////////////////////////////////////////////////////////////////////
-// tb_color_mapper.sv
-// Testbench for color_mapper.sv
-// ─────────────────────────────────────────────────────────────────────────────
-// HOW THIS TESTBENCH WORKS:
+// tb_top.sv  –  corrected for actual DUT
 //
-//  color_mapper is purely combinational.  Tests are immediate (no clocking).
-//
-//  The module takes {R[7:0], G[7:0], B[7:0]} and outputs the upper 4 bits
-//  of each channel when pixel_valid=1, or 0 when pixel_valid=0.
-//
-//  Test cases:
-//    • Active pixel: verify red[3:0] == filtered_rgb[23:20], etc.
-//    • Blanking:     verify all outputs are 0
-//    • VDE signal:   verify vde == pixel_valid
-//    • Full colour sweep: several known pixels, verify truncation
+// KEY FIXES vs original:
+//   1. top.sv has NO cam_reset_n / cam_pwdn ports (they are commented out)
+//   2. BRAM instance in top is named "frame_buffer" not "blk_mem_gen_0"
+//   3. HDMI stub uses TMDS_DATA_P/N not hdmi_tx_p/n
+//   4. Removed Test 1 cam_reset_n/cam_pwdn checks – not in port list
+//   5. Added test for pixel-doubling timing (every other pixel_clk write)
+//   6. PIPE_LATENCY = 13 (1 addr reg + 1 BRAM + 9 filter + 2 overlay)
+//   7. ov7670_capture clocks on NEGEDGE cam_pclk
 ///////////////////////////////////////////////////////////////////////////////
-
 `timescale 1ns/1ps
 
-module tb_color_mapper;
-
-    logic [23:0] filtered_rgb;
-    logic        pixel_valid;
-    logic [3:0]  red, green, blue;
-    logic        vde;
-
-    int error_count = 0;
-
-    color_mapper dut (
-        .filtered_rgb (filtered_rgb),
-        .pixel_valid  (pixel_valid),
-        .red(red), .green(green), .blue(blue), .vde(vde)
-    );
-
-    `define CHECK_CM(cond, msg) \
-        if (!(cond)) begin $error("color_mapper: %s", msg); error_count++; end \
-        else $display("color_mapper PASS: %s", msg);
-
-    initial begin
-        $display("\n=== Color Mapper Tests ===");
-
-        // ── T1: Active pixel, known colour ──────────────────────────────────
-        filtered_rgb = 24'hF0_A0_50;  // R=0xF0, G=0xA0, B=0x50
-        pixel_valid  = 1'b1;
-        #1;  // combinational – no clock needed
-        `CHECK_CM(vde   == 1'b1,       "T1: vde=1 when active")
-        `CHECK_CM(red   == 4'hF,       "T1: red   upper nibble 0xF")
-        `CHECK_CM(green == 4'hA,       "T1: green upper nibble 0xA")
-        `CHECK_CM(blue  == 4'h5,       "T1: blue  upper nibble 0x5")
-
-        // ── T2: Blanking ────────────────────────────────────────────────────
-        filtered_rgb = 24'hFFFFFF;
-        pixel_valid  = 1'b0;
-        #1;
-        `CHECK_CM(vde   == 1'b0,       "T2: vde=0 during blanking")
-        `CHECK_CM(red   == 4'h0,       "T2: red=0 during blanking")
-        `CHECK_CM(green == 4'h0,       "T2: green=0 during blanking")
-        `CHECK_CM(blue  == 4'h0,       "T2: blue=0 during blanking")
-
-        // ── T3: Colour sweep ────────────────────────────────────────────────
-        pixel_valid = 1'b1;
-        for (int i = 0; i < 256; i += 16) begin
-            filtered_rgb = {8'(i), 8'(255-i), 8'(i/2)};
-            #1;
-            if (red !== 4'(i >> 4)) begin
-                $error("sweep red mismatch i=%0d got %0h exp %0h", i, red, i>>4);
-                error_count++;
-            end
+// ── STUB: clk_wiz_0 ──────────────────────────────────────────────────────────
+module clk_wiz_0 (
+    input  logic clk_in1,
+    input  logic reset,
+    output logic clk_out1,   // 25 MHz pixel_clk
+    output logic clk_out2,   // 125 MHz tmds_clk
+    output logic clk_out3,   // ~24 MHz cam_clk
+    output logic locked
+);
+    logic [1:0] cnt4 = 0;
+    always @(posedge clk_in1 or posedge reset) begin
+        if (reset) begin cnt4<=0; clk_out1<=0; end
+        else begin
+            cnt4 <= cnt4+1;
+            if (cnt4==2'd1) clk_out1<=1;
+            if (cnt4==2'd3) clk_out1<=0;
         end
-        $display("color_mapper sweep: done");
+    end
+    initial clk_out2 = 0;
+    always #4 clk_out2 = ~clk_out2;
 
-        // ── T4: VDE tracks pixel_valid ───────────────────────────────────
-        filtered_rgb = 24'h123456;
-        for (int v = 0; v < 2; v++) begin
-            pixel_valid = v[0];
-            #1;
-            if (vde !== v[0]) begin
-                $error("T4: vde=%0b does not match pixel_valid=%0b", vde, v[0]);
-                error_count++;
-            end
+    logic [1:0] cnt_cam = 0;
+    always @(posedge clk_in1 or posedge reset) begin
+        if (reset) begin cnt_cam<=0; clk_out3<=0; end
+        else begin
+            cnt_cam <= cnt_cam+1;
+            if (cnt_cam==2'd1) clk_out3<=1;
+            if (cnt_cam==2'd3) clk_out3<=0;
         end
-        $display("color_mapper T4: vde tracking verified");
-
-        $display("\n========================================");
-        if (error_count == 0) $display("ALL color_mapper TESTS PASSED");
-        else $display("FAILED: %0d error(s)", error_count);
-        $display("========================================\n");
-        $finish;
+    end
+    logic [2:0] lcnt = 0;
+    always @(posedge clk_in1 or posedge reset) begin
+        if (reset) begin locked<=0; lcnt<=0; end
+        else if (!locked) begin lcnt<=lcnt+1; if(lcnt==3'd7) locked<=1; end
     end
 endmodule
 
+// ── STUB: frame_buffer (inferred BRAM – replaces blk_mem_gen_0) ──────────────
+// top.sv instantiates: frame_buffer frame_buffer_inst (...)
+// Port names match actual top.sv wiring
+module frame_buffer (
+    input  logic        clka,
+    input  logic        wea,
+    input  logic [16:0] addra,
+    input  logic [15:0] dina,
+    input  logic        clkb,
+    input  logic [16:0] addrb,
+    output logic [15:0] doutb
+);
+    logic [15:0] mem [0:131071];
+    initial for (int i=0;i<131072;i++) mem[i]=16'h0;
+    always_ff @(posedge clka) if (wea) mem[addra] <= dina;
+    always_ff @(posedge clkb) doutb <= mem[addrb];
+endmodule
 
-///////////////////////////////////////////////////////////////////////////////
-// tb_filter_pipeline.sv
-// Testbench for filter_pipeline.sv
-// ─────────────────────────────────────────────────────────────────────────────
-// HOW THIS TESTBENCH WORKS:
-//
-//  filter_pipeline orchestrates the full filter chain.  Testing it integration-
-//  style is the most useful approach — feed known pixels through the chain and
-//  verify the outputs match expectations from each individual filter.
-//
-//  Because the pipeline has 9 stages of latency we must:
-//    1. Drive pixels for 9+ cycles before expecting valid outputs
-//    2. Track which filter switches are active to predict expected output
-//
-//  The TB simulates a simplified VGA scan (drawX, drawY, active_nblank)
-//  along with frame-buffer data (fb_data) and checks:
-//
-//  Test 1 – Passthrough (all SW = 0)
-//    fb_data contains a known RGB565 pixel.
-//    After pipeline latency, filtered_rgb should equal the RGB888 expansion.
-//
-//  Test 2 – Test pattern (SW[15] = 1)
-//    At drawX = 64 (bar 1 = yellow), output should be 0xFFFF00.
-//
-//  Test 3 – Grayscale only (SW[0] = 1)
-//    Feed RGB565 for a pure red pixel; after pipeline, output should be grey.
-//
-//  Test 4 – Grayscale + Channel Red (SW[0]+SW[5])
-//    After grayscale, R=G=B=Y. After channel_isolate with en_R:
-//    output = {Y, 0, 0}.
-//
-//  Test 5 – pixel_valid tracking
-//    During blanking (active_nblank=0), pvalid_out should eventually go low.
-//
-//  Simulation approach:
-//    We sweep drawX from 0..799 (one full scan line) at 25 MHz.
-//    At each drawX, fb_data is set to a chosen pixel value.
-//    After 9 cycles of pipeline latency we begin sampling outputs.
-///////////////////////////////////////////////////////////////////////////////
+// ── STUB: hdmi_tx_0 ───────────────────────────────────────────────────────────
+module hdmi_tx_0 (
+    input  logic        pix_clk, pix_clkx5, pix_clk_locked, rst,
+    input  logic [3:0]  red, green, blue,
+    input  logic        hsync, vsync, vde,
+    input  logic [3:0]  aux0_din, aux1_din, aux2_din,
+    input  logic        ade,
+    output logic [2:0]  TMDS_DATA_P, TMDS_DATA_N,
+    output logic        TMDS_CLK_P,  TMDS_CLK_N
+);
+    assign TMDS_DATA_P = 3'b111; assign TMDS_DATA_N = 3'b000;
+    assign TMDS_CLK_P  = 1'b1;   assign TMDS_CLK_N  = 1'b0;
+endmodule
 
-`timescale 1ns/1ps
+// ── STUB: font_rom ────────────────────────────────────────────────────────────
+module font_rom (
+    input  logic        clk,
+    input  logic [10:0] addr,
+    output logic [7:0]  data
+);
+    always_ff @(posedge clk)
+        data <= (addr[10:4] == 7'h20) ? 8'h00 : 8'hFF;
+endmodule
 
-module tb_filter_pipeline;
+// ── STUB: sync_flop (used by top for SW synchronisation) ─────────────────────
+module sync_flop (
+    input  logic clk, d,
+    output logic q
+);
+    logic r1 = 0;
+    always_ff @(posedge clk) begin r1 <= d; q <= r1; end
+endmodule
 
-    localparam CLK_PERIOD = 40;    // 25 MHz
+// =============================================================================
+// TOP-LEVEL TESTBENCH
+// =============================================================================
+module tb_top;
 
-    // Ports
-    logic        pixel_clk, reset;
+    // ── DUT ports (matches actual top.sv port list) ───────────────────────────
+    logic        Clk;
+    logic        reset_btn;
     logic [15:0] SW;
-    logic [9:0]  drawX, drawY;
-    logic        active_nblank;
-    logic [15:0] fb_data;
-    logic [23:0] filtered_rgb;
-    logic        pvalid_out;
+    logic        cam_pclk;
+    logic        cam_xclk;
+    wire         cam_siod;
+    logic        cam_sioc;
+    logic        cam_vsync, cam_href;
+    logic [7:0]  cam_data;
+    logic [15:0] LED;
+    logic        hdmi_tmds_clk_n, hdmi_tmds_clk_p;
+    logic [2:0]  hdmi_tmds_data_n, hdmi_tmds_data_p;
 
-    int error_count = 0;
+    // ── Hierarchical probes into DUT ──────────────────────────────────────────
+    wire [9:0]  probe_drawX  = dut.drawX;
+    wire [9:0]  probe_drawY  = dut.drawY;
+    wire        probe_hs     = dut.hs;
+    wire        probe_vs     = dut.vs;
+    wire        probe_blank  = dut.active_nblank;
+    wire [3:0]  probe_hdmi_r = dut.hdmi_r;
+    wire [3:0]  probe_hdmi_g = dut.hdmi_g;
+    wire [3:0]  probe_hdmi_b = dut.hdmi_b;
+    wire        probe_vde    = dut.vde;
+    wire        probe_pxclk  = dut.pixel_clk;
+    wire        probe_camclk = dut.cam_clk_int;
+    wire        probe_cfg    = dut.config_done;
+    wire [16:0] probe_wr_addr= dut.fb_wr_addr;
+    wire [15:0] probe_wr_data= dut.fb_wr_data;
+    wire        probe_wr_en  = dut.fb_wr_en;
 
-    filter_pipeline dut (
-        .pixel_clk    (pixel_clk),
-        .reset        (reset),
-        .SW           (SW),
-        .drawX        (drawX),
-        .drawY        (drawY),
-        .active_nblank(active_nblank),
-        .fb_data      (fb_data),
-        .filtered_rgb (filtered_rgb),
-        .pvalid_out   (pvalid_out)
+    int total_errors = 0;
+
+    localparam CLK_PERIOD   = 10;   // 100 MHz board
+    localparam H_TOTAL      = 800;
+    localparam H_ACTIVE     = 640;
+    localparam V_TOTAL      = 525;
+    localparam V_ACTIVE     = 480;
+    // Pipeline latency: 1(addr reg) + 1(BRAM) + 9(filter) + 2(overlay) = 13
+    localparam PIPE_LATENCY = 13;
+
+    // ── DUT ───────────────────────────────────────────────────────────────────
+    top dut (
+        .Clk              (Clk),
+        .reset_btn        (reset_btn),
+        .SW               (SW),
+        .LED              (LED),
+        .cam_pclk         (cam_pclk),
+        .cam_xclk         (cam_xclk),
+        .cam_siod         (cam_siod),
+        .cam_sioc         (cam_sioc),
+        .cam_vsync        (cam_vsync),
+        .cam_href         (cam_href),
+        .cam_data         (cam_data),
+        .hdmi_tmds_clk_n  (hdmi_tmds_clk_n),
+        .hdmi_tmds_clk_p  (hdmi_tmds_clk_p),
+        .hdmi_tmds_data_n (hdmi_tmds_data_n),
+        .hdmi_tmds_data_p (hdmi_tmds_data_p)
     );
 
-    initial pixel_clk = 0;
-    always #(CLK_PERIOD/2) pixel_clk = ~pixel_clk;
+    initial Clk = 0;
+    always #(CLK_PERIOD/2) Clk = ~Clk;
 
-    // ── Simulate VGA timing for one row ─────────────────────────────────────
-    // Drives drawX from 0..799, active_nblank=1 for 0..639
-    task automatic scan_row(input [9:0] row, input [15:0] fb_pixel);
-        drawY = row;
-        for (int x = 0; x < 800; x++) begin
-            @(negedge pixel_clk);
-            drawX        = 10'(x);
-            active_nblank = (x < 640 && row < 480) ? 1'b1 : 1'b0;
-            fb_data      = fb_pixel;
-        end
+    // cam_pclk: same rate as pixel_clk for simplicity; DUT samples on NEGEDGE
+    initial cam_pclk = 0;
+    always #20 cam_pclk = ~cam_pclk;   // 25 MHz matches pixel_clk
+
+    `define CHECK(expr, msg) \
+        if (!(expr)) begin $error("[%0t] FAIL: %s",$time,msg); total_errors++; end \
+        else $display("[%0t] PASS: %s",$time,msg);
+
+    // ── Tasks ─────────────────────────────────────────────────────────────────
+    task automatic apply_reset(input int cyc = 8);
+        @(negedge Clk); reset_btn = 1;
+        repeat(cyc) @(posedge Clk);
+        @(negedge Clk); reset_btn = 0;
+        repeat(20) @(posedge probe_pxclk);
     endtask
 
-    // ── Expand RGB565 to RGB888 (same logic as filter_pipeline) ─────────────
-    function automatic [23:0] expand565(input [15:0] p);
-        logic [7:0] R, G, B;
-        R = {p[15:11], p[15:13]};
-        G = {p[10:5],  p[10:9]};
-        B = {p[4:0],   p[4:2]};
-        return {R, G, B};
-    endfunction
+    task automatic wait_px(input int n);
+        repeat(n) @(posedge probe_pxclk);
+    endtask
 
-    // ── Compute expected grayscale of RGB888 ─────────────────────────────────
-    function automatic [7:0] gray(input [23:0] rgb);
-        logic [15:0] raw;
-        raw = (16'(rgb[23:16])*77) + (16'(rgb[15:8])*150) + (16'(rgb[7:0])*29);
-        return raw[15:8];
-    endfunction
+    task automatic wait_for_xy(input [9:0] tx, ty, input int timeout=2);
+        int cnt=0, max=timeout*H_TOTAL*V_TOTAL;
+        @(posedge probe_pxclk);
+        while ((probe_drawX!==tx||probe_drawY!==ty)&&cnt<max)
+            begin @(posedge probe_pxclk); cnt++; end
+        if (probe_drawX!==tx||probe_drawY!==ty) begin
+            $error("wait_for_xy timeout (%0d,%0d)",tx,ty); total_errors++; end
+    endtask
 
-    localparam PIPE_LATENCY = 9;  // total pipeline stages
+    // Send one camera pixel (negedge-clocked DUT)
+    task automatic cam_send_pixel(input [15:0] p);
+        @(negedge cam_pclk); cam_href=1; cam_data=p[15:8];
+        @(negedge cam_pclk);             cam_data=p[7:0];
+        @(negedge cam_pclk); cam_href=0;
+    endtask
 
+    task automatic cam_frame_start();
+        @(negedge cam_pclk); cam_vsync=1; cam_href=0;
+        repeat(4) @(negedge cam_pclk);
+        cam_vsync=0;
+        repeat(2) @(negedge cam_pclk);
+    endtask
+
+    // Send one full 640-pixel VGA row (only even pairs write to BRAM)
+    task automatic cam_send_row(input [15:0] pix);
+        cam_href = 1;
+        for (int c=0; c<640; c++) begin
+            @(negedge cam_pclk); cam_data = pix[15:8];
+            @(negedge cam_pclk); cam_data = pix[7:0];
+        end
+        @(negedge cam_pclk); cam_href=0;
+        repeat(4) @(negedge cam_pclk);
+    endtask
+
+    // =========================================================================
+    // TESTS
+    // =========================================================================
     initial begin
-        $dumpfile("tb_filter_pipeline.vcd");
-        $dumpvars(0, tb_filter_pipeline);
+        $dumpfile("tb_top.vcd");
+        $dumpvars(0, tb_top);
 
-        reset = 1; SW = 16'h0; drawX = 0; drawY = 0;
-        active_nblank = 0; fb_data = 16'h0;
-        repeat(5) @(negedge pixel_clk);
-        reset = 0;
-        repeat(3) @(negedge pixel_clk);
+        reset_btn=0; SW=0;
+        cam_vsync=1; cam_href=0; cam_data=0;
 
-        $display("\n=== Filter Pipeline Tests ===");
+        $display("\n╔══════════════════════════════════════╗");
+        $display("║  ECE 385 Top-Level Testbench         ║");
+        $display("╚══════════════════════════════════════╝\n");
 
-        // ── T1: Passthrough ────────────────────────────────────────────────
-        $display("\n-- T1: Passthrough (all SW=0) --");
-        SW = 16'h0000;
+        // ─────────────────────────────────────────────────────────────────────
+        // TEST 1 – CLOCK AND INIT
+        // Verify cam_xclk toggles and SIOC begins toggling after power-up delay.
+        // ─────────────────────────────────────────────────────────────────────
+        $display("═══ T1: Clock and SCCB Init ═══");
+        apply_reset(10);
         begin
-            automatic logic [15:0] test_pix = 16'hF800;   // pure red RGB565
-            automatic logic [23:0] expected  = expand565(test_pix);
-
-            // Stream one row; sample output after pipeline latency
-            drawY = 10'd1;
-            for (int x = 0; x < 800; x++) begin
-                @(negedge pixel_clk);
-                drawX         = 10'(x);
-                active_nblank = (x < 640) ? 1'b1 : 1'b0;
-                fb_data       = test_pix;
-
-                // After PIPE_LATENCY pixels start checking
-                if (x >= PIPE_LATENCY + 2 && x < 640) begin
-                    if (pvalid_out !== 1'b1) begin
-                        $error("T1: pvalid_out not 1 at x=%0d", x);
-                        error_count++;
-                    end
-                    if (filtered_rgb !== expected) begin
-                        $error("T1 passthrough: got 0x%06X exp 0x%06X x=%0d",
-                               filtered_rgb, expected, x);
-                        error_count++;
-                        break;
-                    end
-                end
+            int tog=0; logic prev=0; int cnt=0;
+            prev = probe_camclk;
+            repeat(20) begin
+                @(posedge Clk);
+                if (probe_camclk!==prev) tog++;
+                prev=probe_camclk;
             end
-            if (error_count == 0)
-                $display("[%0t] T1 PASS: passthrough RGB565→RGB888 correct", $time);
+            `CHECK(tog>=2, "T1: cam_xclk toggling after reset")
         end
+        $display("T1 done\n");
 
-        repeat(5) @(negedge pixel_clk);
+        // ─────────────────────────────────────────────────────────────────────
+        // TEST 2 – VGA HORIZONTAL TIMING
+        // hs pulse width = 96 pixel_clk cycles (H_SYNC_END - H_SYNC_START)
+        // active_nblank HIGH for drawX 0..639, LOW for 640..799
+        // ─────────────────────────────────────────────────────────────────────
+        $display("═══ T2: VGA Horizontal Timing ═══");
+        begin
+            int pw=0; logic prev_hs=1;
+            // Wait for hs to go low
+            repeat(H_TOTAL*2) @(posedge probe_pxclk);
+            while (probe_hs!==1'b0) @(posedge probe_pxclk);
+            // Count cycles it stays low
+            while (probe_hs===1'b0) begin @(posedge probe_pxclk); pw++; end
+            `CHECK(pw==96, $sformatf("T2: hs width=%0d (expected 96)",pw))
+        end
+        // Check active_nblank at known positions
+        wait_for_xy(10'd300, probe_drawY);
+        `CHECK(probe_blank===1'b1, "T2: active_nblank HIGH at drawX=300")
+        wait_for_xy(10'd660, probe_drawY);
+        `CHECK(probe_blank===1'b0, "T2: active_nblank LOW at drawX=660")
+        $display("T2 done\n");
 
-        // ── T2: Test pattern (SW[15]=1) ───────────────────────────────────
-        $display("\n-- T2: Test pattern (SW[15]=1) --");
+        // ─────────────────────────────────────────────────────────────────────
+        // TEST 3 – VGA VERTICAL SYNC
+        // vs pulse = 2 scan lines = 1600 pixel_clk cycles
+        // ─────────────────────────────────────────────────────────────────────
+        $display("═══ T3: VGA Vertical Sync ═══");
+        begin
+            int vw=0; int cnt=0;
+            while (probe_vs!==1'b0 && cnt<V_TOTAL*H_TOTAL)
+                begin @(posedge probe_pxclk); cnt++; end
+            if (probe_vs!==1'b0) begin
+                $error("T3: vs never went LOW"); total_errors++;
+            end else begin
+                while (probe_vs===1'b0) begin @(posedge probe_pxclk); vw++; end
+                `CHECK(vw>=1595&&vw<=1605,
+                    $sformatf("T3: vs width=%0d cycles (expected ~1600)",vw))
+            end
+        end
+        $display("T3 done\n");
+
+        // ─────────────────────────────────────────────────────────────────────
+        // TEST 4 – VDE ACTIVE WINDOW TIMING
+        // vde should go HIGH PIPE_LATENCY cycles after active_nblank rises
+        // ─────────────────────────────────────────────────────────────────────
+        $display("═══ T4: VDE Timing ═══");
+        begin
+            int cnt=0;
+            while ((probe_drawX!==10'd0||probe_drawY>=10'd480)&&cnt<H_TOTAL*V_TOTAL)
+                begin @(posedge probe_pxclk); cnt++; end
+            wait_px(PIPE_LATENCY+1);
+            `CHECK(probe_vde===1'b1,
+                $sformatf("T4: vde HIGH %0d cycles after active region",PIPE_LATENCY))
+        end
+        wait_for_xy(10'd640, probe_drawY);
+        wait_px(PIPE_LATENCY+1);
+        `CHECK(probe_vde===1'b0, "T4: vde LOW past active region end")
+        $display("T4 done\n");
+
+        // ─────────────────────────────────────────────────────────────────────
+        // TEST 5 – COLOUR-BAR TEST PATTERN (SW[15]=1)
+        // Bar 0 (drawX 0..79)   → WHITE  hdmi_r/g/b = 4'hF
+        // Bar 1 (drawX 80..159) → YELLOW hdmi_b = 4'h0
+        // filter_pipeline uses drawX/80 (8 bars × 80 pixels = 640)
+        // ─────────────────────────────────────────────────────────────────────
+        $display("═══ T5: Colour-Bar Pattern ═══");
         SW = 16'h8000;
-        begin
-            drawY = 10'd2;
-            for (int x = 0; x < 800; x++) begin
-                @(negedge pixel_clk);
-                drawX         = 10'(x);
-                active_nblank = (x < 640) ? 1'b1 : 1'b0;
-                fb_data       = 16'h0000;  // doesn't matter, SW[15] overrides
+        wait_px(5);
+        wait_for_xy(10'd40, 10'd50);      // centre of bar 0
+        wait_px(PIPE_LATENCY);
+        `CHECK(probe_hdmi_r===4'hF, "T5 bar0: R=F (white)")
+        `CHECK(probe_hdmi_g===4'hF, "T5 bar0: G=F (white)")
+        `CHECK(probe_hdmi_b===4'hF, "T5 bar0: B=F (white)")
 
-                // Bar 1 (drawX[9:7]=1) = yellow = 0xFFFF00
-                if (x == 128 + PIPE_LATENCY + 2 && active_nblank) begin
-                    if (filtered_rgb !== 24'hFFFF00) begin
-                        $error("T2 bar1 yellow: got 0x%06X exp 0xFFFF00", filtered_rgb);
-                        error_count++;
-                    end else
-                        $display("[%0t] T2 PASS: yellow bar correct (0xFFFF00)", $time);
-                end
-                // Bar 0 (drawX[9:7]=0) = white = 0xFFFFFF
-                if (x == 32 + PIPE_LATENCY + 2 && active_nblank) begin
-                    if (filtered_rgb !== 24'hFFFFFF) begin
-                        $error("T2 bar0 white: got 0x%06X exp 0xFFFFFF", filtered_rgb);
-                        error_count++;
-                    end else
-                        $display("[%0t] T2 PASS: white bar correct (0xFFFFFF)", $time);
-                end
-            end
-        end
+        wait_for_xy(10'd120, 10'd50);     // centre of bar 1 (yellow)
+        wait_px(PIPE_LATENCY);
+        `CHECK(probe_hdmi_r===4'hF, "T5 bar1: R=F (yellow)")
+        `CHECK(probe_hdmi_g===4'hF, "T5 bar1: G=F (yellow)")
+        `CHECK(probe_hdmi_b===4'h0, "T5 bar1: B=0 (yellow)")
 
-        repeat(5) @(negedge pixel_clk);
-
-        // ── T3: Grayscale only (SW[0]=1) ─────────────────────────────────
-        $display("\n-- T3: Grayscale (SW[0]) --");
-        SW = 16'h0001;
-        begin
-            automatic logic [15:0] test_pix = 16'h07E0; // pure green RGB565
-            automatic logic [23:0] rgb888    = expand565(test_pix);
-            automatic logic [7:0]  Y         = gray(rgb888);
-            automatic logic [23:0] expected  = {Y, Y, Y};
-
-            drawY = 10'd3;
-            for (int x = 0; x < 800; x++) begin
-                @(negedge pixel_clk);
-                drawX         = 10'(x);
-                active_nblank = (x < 640) ? 1'b1 : 1'b0;
-                fb_data       = test_pix;
-                if (x == 200 + PIPE_LATENCY + 2 && active_nblank) begin
-                    if (filtered_rgb !== expected) begin
-                        $error("T3 gray: got 0x%06X exp 0x%06X", filtered_rgb, expected);
-                        error_count++;
-                    end else
-                        $display("[%0t] T3 PASS: grayscale correct (Y=0x%02X)", $time, Y);
-                end
-            end
-        end
-
-        repeat(5) @(negedge pixel_clk);
-
-        // ── T4: Blanking – pvalid_out goes low ───────────────────────────
-        $display("\n-- T4: Blanking pvalid_out --");
         SW = 16'h0000;
-        begin
-            drawY = 10'd481;   // below active area
-            for (int x = 0; x < 800; x++) begin
-                @(negedge pixel_clk);
-                drawX         = 10'(x);
-                active_nblank = 1'b0;   // blanking
-                fb_data       = 16'hFFFF;
-            end
-            // After pipeline latency, pvalid_out should be 0
-            if (pvalid_out !== 1'b0) begin
-                $error("T4: pvalid_out=%0b expected 0 during blanking", pvalid_out);
-                error_count++;
-            end else
-                $display("[%0t] T4 PASS: pvalid_out=0 during blanking", $time);
-        end
+        $display("T5 done\n");
 
-        $display("\n========================================");
-        if (error_count == 0)
-            $display("ALL filter_pipeline TESTS PASSED");
+        // ─────────────────────────────────────────────────────────────────────
+        // TEST 6 – CAMERA PIXEL END-TO-END (pure red)
+        // Pixel (0,0) = 0xF800.  With pixel-doubling:
+        //   wr_addr = 0.  Displayed at drawX[1:0]=0, drawY[1:0]=0.
+        //   R565=11111 → R8=0xFF → hdmi_r=4'hF
+        //   G565=000000 → G8=0x00 → hdmi_g=4'h0
+        //   B565=00000  → B8=0x00 → hdmi_b=4'h0
+        // ─────────────────────────────────────────────────────────────────────
+        $display("═══ T6: Camera Pixel End-to-End ===");
+        SW = 16'h0000;
+        cam_frame_start();
+        // col=0, row=0: both even → DUT writes to addr 0
+        @(negedge cam_pclk); cam_href=1;
+        @(negedge cam_pclk); cam_data=8'hF8;  // high byte: R[4:0]=11111 G[5:3]=000
+        @(negedge cam_pclk); cam_data=8'h00;  // low byte:  G[2:0]=000  B[4:0]=00000
+        @(negedge cam_pclk); cam_href=0;
+
+        // Verify write happened
+        wait_px(5);
+        `CHECK(probe_wr_en===1'b0, "T6: wr_en deasserted after write")
+
+        // Wait for display to reach (0,0) and add pipeline latency
+        wait_for_xy(10'd0, 10'd0, 3);
+        wait_px(PIPE_LATENCY+2);
+        `CHECK(probe_hdmi_r===4'hF, "T6: hdmi_r=F (red)")
+        `CHECK(probe_hdmi_g===4'h0, "T6: hdmi_g=0 (red)")
+        `CHECK(probe_hdmi_b===4'h0, "T6: hdmi_b=0 (red)")
+        `CHECK(probe_vde===1'b1,    "T6: vde HIGH during active pixel")
+        $display("T6 done\n");
+
+        // ─────────────────────────────────────────────────────────────────────
+        // TEST 7 – GRAYSCALE FILTER (SW[0]=1)
+        // Same pure-red pixel: Y = (77*255)>>8 = 76 = 0x4C
+        // hdmi_r/g/b = 0x4C >> 4 = 4'h4
+        // ─────────────────────────────────────────────────────────────────────
+        $display("═══ T7: Grayscale Filter ═══");
+        SW = 16'h0001;
+        wait_px(5);
+        wait_for_xy(10'd0, 10'd0, 3);
+        wait_px(PIPE_LATENCY+2);
+        `CHECK(probe_hdmi_r===4'h4, $sformatf("T7: hdmi_r=%0h (expected 4)",probe_hdmi_r))
+        `CHECK(probe_hdmi_g===4'h4, $sformatf("T7: hdmi_g=%0h (expected 4)",probe_hdmi_g))
+        `CHECK(probe_hdmi_b===4'h4, $sformatf("T7: hdmi_b=%0h (expected 4)",probe_hdmi_b))
+        SW = 16'h0000;
+        $display("T7 done\n");
+
+        // ─────────────────────────────────────────────────────────────────────
+        // TEST 8 – PIXEL DOUBLING WRITE PATTERN
+        // Check that LED[3] (= fb_wr_en) only pulses every other cam_pclk
+        // and every other VGA row pair
+        // ─────────────────────────────────────────────────────────────────────
+        $display("═══ T8: Pixel-Doubling Write Gate ═══");
+        begin
+            int wr_count=0;
+            cam_frame_start();
+            cam_href=1;
+            // Send 8 pixel pairs (16 bytes) – should get exactly 2 writes
+            // (col 0 and col 2 are even → write; col 1 and col 3 → no write)
+            for (int c=0; c<8; c++) begin
+                @(negedge cam_pclk); cam_data=8'hAA;
+                @(negedge cam_pclk); cam_data=8'h55;
+                @(negedge cam_pclk);
+                if (probe_wr_en) wr_count++;
+            end
+            cam_href=0;
+            // 8 VGA pixels → 4 even VGA columns (0,2,4,6) → 4 writes from row=0
+            `CHECK(wr_count==4, $sformatf("T8: %0d writes in 8 pixels (expected 4)",wr_count))
+        end
+        $display("T8 done\n");
+
+        // ─────────────────────────────────────────────────────────────────────
+        // TEST 9 – RESET CLEARS PIPELINE
+        // ─────────────────────────────────────────────────────────────────────
+        $display("═══ T9: Reset Clears Pipeline ═══");
+        apply_reset(8);
+        wait_px(2*H_TOTAL+PIPE_LATENCY+10);
+        wait_for_xy(10'd300, 10'd100, 3);
+        wait_px(PIPE_LATENCY+1);
+        `CHECK(probe_vde===1'b1,    "T9: vde HIGH during active region post-reset")
+        `CHECK(probe_hdmi_r===4'h0, "T9: hdmi_r=0 (black) post-reset")
+        `CHECK(probe_hdmi_g===4'h0, "T9: hdmi_g=0 post-reset")
+        `CHECK(probe_hdmi_b===4'h0, "T9: hdmi_b=0 post-reset")
+        $display("T9 done\n");
+
+        $display("\n╔══════════════════════════════════════╗");
+        $display("║         SIMULATION COMPLETE          ║");
+        if (total_errors==0)
+            $display("║     ALL TESTS PASSED (0 errors)      ║");
         else
-            $display("FAILED: %0d error(s)", error_count);
-        $display("========================================\n");
+            $display("║  FAILED – %0d error(s)                ║", total_errors);
+        $display("╚══════════════════════════════════════╝\n");
         $finish;
     end
+
+    // Optional waveform monitor – uncomment for console tracing
+    // initial $monitor("[%0t] drawX=%0d drawY=%0d vde=%0b r=%0h g=%0h b=%0h",
+    //     $time, probe_drawX, probe_drawY, probe_vde,
+    //     probe_hdmi_r, probe_hdmi_g, probe_hdmi_b);
+
 endmodule

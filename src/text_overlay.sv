@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // text_overlay.sv
-// ECE 385 Final Project – Real-Time FPGA Video Processing Pipeline
+// ECE 385 Final Project - Real-Time FPGA Video Processing Pipeline
 //
 // TEXT OVERLAY ENGINE
 // ─────────────────────────────────────────────────────────────────────────────
@@ -32,7 +32,7 @@
 //      (1 cycle font ROM read + 1 cycle output register).
 //
 // Font ROM interface (font_rom.sv from AXI lab):
-//   addr[10:4] = ASCII code (7 bits, supports 0x00–0x7F)
+//   addr[10:4] = ASCII code (7 bits, supports 0x00-0x7F)
 //   addr[3:0]  = row within glyph (0 = top row, 15 = bottom row)
 //   data[7:0]  = 8 pixels; bit[7] is the LEFTMOST pixel; 1 = draw foreground
 //   1-cycle synchronous read latency.
@@ -62,8 +62,8 @@ module text_overlay (
     // =========================================================================
     // DISPLAY PARAMETERS
     // =========================================================================
-    localparam [23:0] FG_COLOR  = 24'hFFFF00;  // Yellow  – foreground (text)
-    localparam [23:0] BG_COLOR  = 24'h000000;  // BLACK    – banner background
+    localparam [23:0] FG_COLOR  = 24'hFFFF00;  // Yellow  - foreground (text)
+    localparam [23:0] BG_COLOR  = 24'h000000;  // BLACK    - banner background
     localparam        MAX_CHARS = 80;           // maximum characters in one line
     localparam        CHAR_W    = 8;            // glyph width  in pixels
     localparam        CHAR_H    = 16;           // glyph height in pixels
@@ -71,11 +71,11 @@ module text_overlay (
     // =========================================================================
     // TEXT BUFFER
     // =========================================================================
-    // text_buf       – rebuilt combinationally every cycle from SW
-    // text_buf_stable– latched copy used for rendering; only updated at vsync
+    // text_buf       - rebuilt combinationally every cycle from SW
+    // text_buf_stable- latched copy used for rendering; only updated at vsync
     //                  so every frame shows a consistent label even if the user
     //                  flips a switch mid-frame
-    // text_len / text_len_stable – how many characters are actually in the string
+    // text_len / text_len_stable - how many characters are actually in the string
     logic [7:0] text_buf        [0:MAX_CHARS-1];
     logic [7:0] text_buf_stable [0:MAX_CHARS-1];
     logic [6:0] text_len;
@@ -126,8 +126,8 @@ module text_overlay (
         text_len = 7'd1;  // start at 1: index 0 is reserved as leading space
  
         // Helper macro (unrolled inline below):
-        //   append_sep  – writes " + " when something was already printed
-        //   append_XXXX – writes the token characters and advances text_len
+        //   append_sep  - writes " + " when something was already printed
+        //   append_XXXX - writes the token characters and advances text_len
  
         if (SW[8:0] == 9'b0) begin
             // ── No filters active → show "PASSTHROUGH" ────────────────────
@@ -260,11 +260,10 @@ module text_overlay (
                     text_len = text_len + 3;
                 end
                 text_buf[text_len]   = 8'h53; // S
-                text_buf[text_len+1] = 8'h48; // H
-                text_buf[text_len+2] = 8'h41; // A
-                text_buf[text_len+3] = 8'h52; // R
-                text_buf[text_len+4] = 8'h50; // P
-                text_len = text_len + 5;
+                text_buf[text_len+1] = 8'h49; // I
+                text_buf[text_len+2] = 8'h4C; // L
+                text_buf[text_len+3] = 8'h48; // H
+                text_len = text_len + 4;
             end
  
             // ── EDGE  (SW[1]) ────────────────────────────────────────────────
@@ -353,7 +352,7 @@ module text_overlay (
     assign cur_glyph = (char_col < text_len_stable) ? text_buf_stable[char_col] : 8'h20;
     assign font_addr = {cur_glyph[6:0], pixel_row};  // 7-bit ASCII + 4-bit row = 11 bits
  
-    // Font ROM from AXI lab – must be included in project sources
+    // Font ROM from AXI lab - must be included in project sources
     font_rom font_rom_inst (
         .addr (font_addr),
         .data (font_bits)

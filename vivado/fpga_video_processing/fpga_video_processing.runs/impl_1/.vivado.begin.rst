@@ -443,3 +443,13 @@
     <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="22392" HostCore="16" HostMemory="016312553472">
     </Process>
 </ProcessHandle>
+<?xml version="1.0"?>
+<ProcessHandle Version="1" Minor="0">
+    <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="3984" HostCore="16" HostMemory="016312553472">
+    </Process>
+</ProcessHandle>
+<?xml version="1.0"?>
+<ProcessHandle Version="1" Minor="0">
+    <Process Command="vivado.bat" Owner="patsn" Host="AFIFLAPTOP" Pid="11608" HostCore="16" HostMemory="016312553472">
+    </Process>
+</ProcessHandle>

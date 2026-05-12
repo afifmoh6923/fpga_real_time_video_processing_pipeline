@@ -1,287 +1,180 @@
 ///////////////////////////////////////////////////////////////////////////////
-// tb_pointwise_filters.sv
-// Testbenches for: grayscale, brightness_contrast, channel_isolate
-// ─────────────────────────────────────────────────────────────────────────────
-// HOW THESE TESTBENCHES WORK:
+// tb_pointwise_filters.sv  –  corrected
 //
-//  All three modules are pointwise (no line buffers) with 1-cycle pipeline
-//  latency.  Each test drives an input pixel and reads the output one clock
-//  cycle later.
-//
-//  GRAYSCALE (tb_grayscale module)
-//  ─────────
-//  Formula: Y = (77*R + 150*G + 29*B) >> 8
-//  Coefficients verified to sum to 256 (correct normalisation).
-//
-//  Cases tested:
-//    • Pure white (R=G=B=255) → Y should be 255
-//    • Pure black (R=G=B=0)   → Y should be 0
-//    • Pure red   (255,0,0)   → Y = (77*255)>>8 = 76
-//    • Pure green (0,255,0)   → Y = (150*255)>>8 = 149
-//    • Pure blue  (0,0,255)   → Y = (29*255)>>8  = 28
-//    • Mixed      (100,150,200)→ compute expected, compare ±1 (fixed-point)
-//    • Bypass (enable=0)      → rgb_out == rgb_in exactly
-//    • pixel_valid=0          → pvalid_out should be 0 next cycle
-//
-//  BRIGHTNESS / CONTRAST (tb_brightness_contrast module)
-//  ──────────────────────
-//  Contrast: val_out = val_in + (val_in >> 1)   (≈ 1.5×)
-//  Brightness: val_out = val_in + 32
-//  Saturation: clamp to 255
-//
-//  Cases tested:
-//    • Brightness only: (100,100,100) → (132,132,132) each channel
-//    • Contrast only:   (100,100,100) → (150,150,150) each channel
-//    • Both:            (100,100,100) → contrast first=150, then +32=182
-//    • Saturation:      (240,240,240) + brightness → clamp to 255
-//    • Bypass (both disabled) → passthrough
-//
-//  CHANNEL ISOLATION (tb_channel_isolate module)
-//  ──────────────────
-//  Cases tested:
-//    • en_R only:  output = {R, 0, 0}
-//    • en_G only:  output = {0, G, 0}
-//    • en_B only:  output = {0, 0, B}
-//    • en_R+en_G:  priority R wins → {R, 0, 0}
-//    • none:       passthrough
+// KEY FIXES vs original:
+//   1. Removed illegal literal syntax: 24'h{8'd180,8'd90,8'd45}
+//      → replaced with {8'd180,8'd90,8'd45}
+//   2. channel_isolate priority verified against actual sv (R>G>B)
+//   3. All tasks use posedge clk (modules use posedge clk)
+//   4. Grayscale Y formula uses >> 8 (same as actual module)
 ///////////////////////////////////////////////////////////////////////////////
-
 `timescale 1ns/1ps
 
 // =============================================================================
-// GRAYSCALE TESTBENCH
+// GRAYSCALE
 // =============================================================================
 module tb_grayscale;
-
     localparam CLK_PERIOD = 40;
-    logic        clk, reset, enable, pixel_valid, pvalid_out;
+    logic clk=0, reset, enable, pixel_valid, pvalid_out;
     logic [23:0] rgb_in, rgb_out;
-    int error_count = 0;
+    int errors=0;
 
-    grayscale dut (
-        .clk(clk), .reset(reset), .enable(enable),
-        .pixel_valid(pixel_valid), .rgb_in(rgb_in),
-        .rgb_out(rgb_out), .pvalid_out(pvalid_out)
-    );
+    grayscale dut(.clk,.reset,.enable,.pixel_valid,.rgb_in,.rgb_out,.pvalid_out);
+    always #(CLK_PERIOD/2) clk=~clk;
 
-    initial clk = 0;
-    always #(CLK_PERIOD/2) clk = ~clk;
-
-    // ── Helper: expected Y from BT.601 integer formula ─────────────────────
-    function automatic [7:0] expected_Y(input [7:0] r, input [7:0] g, input [7:0] b);
-        logic [15:0] raw;
-        raw = (16'(r) * 77) + (16'(g) * 150) + (16'(b) * 29);
-        return raw[15:8];   // >> 8
+    function automatic [7:0] Y(input [7:0] r,g,b);
+        return ((16'(r)*77)+(16'(g)*150)+(16'(b)*29)) >> 8;
     endfunction
 
-    // ── Helper: drive one pixel and read result after 1 cycle ─────────────
-    task automatic drive_and_check(
-        input [7:0]   r, g, b,
-        input         en,
-        input [23:0]  expected,
-        input string  label
-    );
-        @(negedge clk);
-        rgb_in       = {r, g, b};
-        enable       = en;
-        pixel_valid  = 1'b1;
-        @(posedge clk);
-        @(negedge clk);   // outputs are registered; stable after negedge
-        if (rgb_out !== expected) begin
-            $error("grayscale %s: got 0x%06X expected 0x%06X", label, rgb_out, expected);
-            error_count++;
-        end else
-            $display("[%0t] grayscale PASS: %s → 0x%06X", $time, label, rgb_out);
-        if (pvalid_out !== 1'b1) begin
-            $error("grayscale %s: pvalid_out not asserted", label);
-            error_count++;
-        end
+    task automatic check(input [7:0] r,g,b, input en, input [23:0] exp, input string lbl);
+        @(negedge clk); rgb_in={r,g,b}; enable=en; pixel_valid=1;
+        @(posedge clk); @(negedge clk);
+        if (rgb_out!==exp) begin
+            $error("gray %s: got 0x%06X exp 0x%06X",lbl,rgb_out,exp); errors++; end
+        else $display("[%0t] gray PASS: %s → 0x%06X",$time,lbl,rgb_out);
+        if (pvalid_out!==1'b1) begin
+            $error("gray %s: pvalid_out not 1",lbl); errors++; end
     endtask
 
     initial begin
-        reset = 1; enable = 1; pixel_valid = 0; rgb_in = 24'h0;
-        repeat(4) @(negedge clk);
-        reset = 0;
-        repeat(2) @(negedge clk);
-
+        $dumpfile("tb_pointwise_filters.vcd"); $dumpvars(0,tb_grayscale);
+        reset=1; enable=1; pixel_valid=0; rgb_in=0;
+        repeat(4) @(negedge clk); reset=0; repeat(2) @(negedge clk);
         $display("\n=== Grayscale Tests ===");
 
-        // White
-        begin automatic logic [7:0] y = expected_Y(255,255,255);
-        drive_and_check(255,255,255, 1, {y,y,y}, "white"); end
+        // Enabled cases
+        begin automatic logic [7:0] y=Y(255,255,255);
+            check(255,255,255, 1, {y,y,y}, "white"); end
+        check(0,0,0, 1, 24'h0, "black");
+        begin automatic logic [7:0] y=Y(255,0,0);
+            check(255,0,0, 1, {y,y,y}, "pure red"); end
+        begin automatic logic [7:0] y=Y(0,255,0);
+            check(0,255,0, 1, {y,y,y}, "pure green"); end
+        begin automatic logic [7:0] y=Y(0,0,255);
+            check(0,0,255, 1, {y,y,y}, "pure blue"); end
+        begin automatic logic [7:0] y=Y(100,150,200);
+            check(100,150,200, 1, {y,y,y}, "mixed"); end
 
-        // Black
-        drive_and_check(0,0,0, 1, 24'h0, "black");
+        // Bypass (enable=0): output = input
+        check(180,90,45, 0, {8'd180,8'd90,8'd45}, "bypass");
 
-        // Pure red
-        begin automatic logic [7:0] y = expected_Y(255,0,0);
-        drive_and_check(255,0,0, 1, {y,y,y}, "pure red"); end
+        // pixel_valid=0 → pvalid_out=0
+        @(negedge clk); pixel_valid=0; rgb_in=24'hFFFFFF; enable=1;
+        @(posedge clk); @(negedge clk);
+        if (pvalid_out!==1'b0) begin
+            $error("gray: pvalid_out should be 0 when pixel_valid=0"); errors++; end
+        else $display("[%0t] gray PASS: pvalid=0 propagated",$time);
 
-        // Pure green
-        begin automatic logic [7:0] y = expected_Y(0,255,0);
-        drive_and_check(0,255,0, 1, {y,y,y}, "pure green"); end
-
-        // Pure blue
-        begin automatic logic [7:0] y = expected_Y(0,0,255);
-        drive_and_check(0,0,255, 1, {y,y,y}, "pure blue"); end
-
-        // Mixed
-        begin automatic logic [7:0] y = expected_Y(100,150,200);
-        drive_and_check(100,150,200, 1, {y,y,y}, "mixed"); end
-
-        // Bypass (enable=0): output must equal input exactly
-        drive_and_check(180,90,45, 0, 24'h{8'd180,8'd90,8'd45}, "bypass");
-
-        // pixel_valid=0: pvalid_out must be 0
-        @(negedge clk);
-        pixel_valid = 0; rgb_in = 24'hFFFFFF; enable = 1;
-        @(posedge clk);
-        @(negedge clk);
-        if (pvalid_out !== 1'b0) begin
-            $error("grayscale: pvalid_out should be 0 when pixel_valid=0");
-            error_count++;
-        end else
-            $display("[%0t] grayscale PASS: pvalid_out=0 when invalid", $time);
-
-        $display("Grayscale: %0d error(s)", error_count);
-        $finish;
+        $display("Grayscale: %0d error(s)",errors); $finish;
     end
 endmodule
 
 
 // =============================================================================
-// BRIGHTNESS / CONTRAST TESTBENCH
+// BRIGHTNESS / CONTRAST
 // =============================================================================
 module tb_brightness_contrast;
-
     localparam CLK_PERIOD = 40;
-    logic        clk, reset, en_brightness, en_contrast, pixel_valid, pvalid_out;
+    logic clk=0, reset, en_brightness, en_contrast, pixel_valid, pvalid_out;
     logic [23:0] rgb_in, rgb_out;
-    int error_count = 0;
+    int errors=0;
 
-    brightness_contrast dut (
-        .clk(clk), .reset(reset),
-        .en_brightness(en_brightness), .en_contrast(en_contrast),
-        .pixel_valid(pixel_valid), .rgb_in(rgb_in),
-        .rgb_out(rgb_out), .pvalid_out(pvalid_out)
-    );
+    brightness_contrast dut(.clk,.reset,.en_brightness,.en_contrast,
+                             .pixel_valid,.rgb_in,.rgb_out,.pvalid_out);
+    always #(CLK_PERIOD/2) clk=~clk;
 
-    initial clk = 0;
-    always #(CLK_PERIOD/2) clk = ~clk;
-
-    // Compute expected value: contrast then brightness, with clamp
-    function automatic [7:0] expected_ch(
-        input [7:0] v,
-        input       do_contrast,
-        input       do_bright
-    );
-        logic [8:0] tmp;
-        tmp = {1'b0, v};
-        if (do_contrast) tmp = tmp + {2'b0, v[7:1]};        // +v/2 (1.5x)
-        if (tmp > 9'd255) tmp = 9'd255;
-        if (do_bright)   tmp = tmp + 9'd32;
-        if (tmp > 9'd255) tmp = 9'd255;
-        return tmp[7:0];
+    function automatic [7:0] exp_ch(input [7:0] v, input do_c, do_b);
+        logic [8:0] t;
+        t = {1'b0, v};
+        if (do_c) begin t = t + {2'b0, v[7:1]}; if(t>255) t=255; end
+        if (do_b) begin t = t + 9'd32;           if(t>255) t=255; end
+        return t[7:0];
     endfunction
 
-    task automatic drive_check(
-        input [7:0] r, g, b,
-        input       ec, eb,
-        input string label
-    );
-        logic [23:0] exp;
-        exp = {expected_ch(r,ec,eb), expected_ch(g,ec,eb), expected_ch(b,ec,eb)};
-        @(negedge clk);
-        rgb_in = {r,g,b}; en_contrast=ec; en_brightness=eb; pixel_valid=1;
+    task automatic check(input [7:0] r,g,b, input ec,eb, input string lbl);
+        automatic logic [23:0] exp = {exp_ch(r,ec,eb),exp_ch(g,ec,eb),exp_ch(b,ec,eb)};
+        @(negedge clk); rgb_in={r,g,b}; en_contrast=ec; en_brightness=eb; pixel_valid=1;
         @(posedge clk); @(negedge clk);
-        if (rgb_out !== exp) begin
-            $error("bc %s: got 0x%06X expected 0x%06X (r=%0d,g=%0d,b=%0d ec=%0b eb=%0b)",
-                   label, rgb_out, exp, r, g, b, ec, eb);
-            error_count++;
-        end else
-            $display("[%0t] bc PASS: %s", $time, label);
+        if (rgb_out!==exp) begin
+            $error("bc %s: got 0x%06X exp 0x%06X",lbl,rgb_out,exp); errors++; end
+        else $display("[%0t] bc PASS: %s",$time,lbl);
     endtask
 
     initial begin
-        reset=1; en_brightness=0; en_contrast=0; pixel_valid=0; rgb_in=24'h0;
+        reset=1; en_brightness=0; en_contrast=0; pixel_valid=0; rgb_in=0;
         repeat(4) @(negedge clk); reset=0; repeat(2) @(negedge clk);
-
         $display("\n=== Brightness/Contrast Tests ===");
 
-        drive_check(100,100,100, 0,1, "brightness only");
-        drive_check(100,100,100, 1,0, "contrast only");
-        drive_check(100,100,100, 1,1, "both");
-        drive_check(240,240,240, 0,1, "brightness saturation clamp");
-        drive_check(200,200,200, 1,0, "contrast saturation clamp");
-        drive_check(128, 64, 32, 0,0, "bypass");
+        check(100,100,100, 0,1, "brightness only");
+        check(100,100,100, 1,0, "contrast only");
+        check(100,100,100, 1,1, "both");
+        check(240,240,240, 0,1, "brightness saturation");
+        check(200,200,200, 1,0, "contrast saturation");
+        check(128, 64, 32, 0,0, "bypass");
+        check(200, 50, 10, 1,1, "asymmetric both");
+        check(  0,  0,  0, 1,1, "black both");
+        check(255,255,255, 1,1, "white both – full clamp");
 
-        // Asymmetric channels
-        drive_check(200, 50, 10, 1,1, "asymmetric both");
-        drive_check(0,   0,  0,  1,1, "black both enabled");
-        drive_check(255,255,255, 1,1, "white both enabled – full clamp");
-
-        $display("Brightness/Contrast: %0d error(s)", error_count);
-        $finish;
+        $display("Brightness/Contrast: %0d error(s)",errors); $finish;
     end
 endmodule
 
 
 // =============================================================================
-// CHANNEL ISOLATION TESTBENCH
+// CHANNEL ISOLATION
 // =============================================================================
 module tb_channel_isolate;
-
     localparam CLK_PERIOD = 40;
-    logic        clk, reset, en_R, en_G, en_B, pixel_valid, pvalid_out;
+    logic clk=0, reset, en_R, en_G, en_B, pixel_valid, pvalid_out;
     logic [23:0] rgb_in, rgb_out;
-    int error_count = 0;
+    int errors=0;
 
-    channel_isolate dut (
-        .clk(clk), .reset(reset),
-        .en_R(en_R), .en_G(en_G), .en_B(en_B),
-        .pixel_valid(pixel_valid), .rgb_in(rgb_in),
-        .rgb_out(rgb_out), .pvalid_out(pvalid_out)
+    channel_isolate dut(.clk,.reset,.en_R,.en_G,.en_B,
+                        .pixel_valid,.rgb_in,.rgb_out,.pvalid_out);
+    always #(CLK_PERIOD/2) clk=~clk;
+
+    task automatic check(
+        input [7:0] r,g,b, input er,eg,eb,
+        input [23:0] exp, input string lbl
     );
-
-    initial clk = 0;
-    always #(CLK_PERIOD/2) clk = ~clk;
-
-    task automatic test_iso(
-        input [7:0]  r, g, b,
-        input        er, eg, eb,
-        input [23:0] expected,
-        input string label
-    );
-        @(negedge clk);
-        rgb_in = {r,g,b}; en_R=er; en_G=eg; en_B=eb; pixel_valid=1;
+        @(negedge clk); rgb_in={r,g,b}; en_R=er; en_G=eg; en_B=eb; pixel_valid=1;
         @(posedge clk); @(negedge clk);
-        if (rgb_out !== expected) begin
-            $error("iso %s: got 0x%06X exp 0x%06X", label, rgb_out, expected);
-            error_count++;
-        end else
-            $display("[%0t] iso PASS: %s → 0x%06X", $time, label, rgb_out);
+        if (rgb_out!==exp) begin
+            $error("iso %s: got 0x%06X exp 0x%06X",lbl,rgb_out,exp); errors++; end
+        else $display("[%0t] iso PASS: %s → 0x%06X",$time,lbl,rgb_out);
     endtask
 
     initial begin
-        reset=1; en_R=0; en_G=0; en_B=0; pixel_valid=0; rgb_in=24'h0;
+        reset=1; en_R=0; en_G=0; en_B=0; pixel_valid=0; rgb_in=0;
         repeat(4) @(negedge clk); reset=0; repeat(2) @(negedge clk);
-
         $display("\n=== Channel Isolation Tests ===");
 
-        test_iso(180, 90, 45,  1,0,0,  24'hB4_00_00,  "R only");
-        test_iso(180, 90, 45,  0,1,0,  24'h00_5A_00,  "G only");
-        test_iso(180, 90, 45,  0,0,1,  24'h00_00_2D,  "B only");
-        test_iso(180, 90, 45,  0,0,0,  24'hB4_5A_2D,  "bypass (none)");
-        // Priority: R > G when both set
-        test_iso(180, 90, 45,  1,1,0,  24'hB4_00_00,  "R+G → R wins");
-        test_iso(180, 90, 45,  0,1,1,  24'h00_5A_00,  "G+B → G wins");
-        test_iso(180, 90, 45,  1,0,1,  24'hB4_00_00,  "R+B → R wins");
-        test_iso(180, 90, 45,  1,1,1,  24'hB4_00_00,  "all → R wins");
-        // Edge: zero values
-        test_iso(0,   0,  0,  1,0,0,  24'h000000,    "R only, black");
-        test_iso(255,255,255, 0,1,0,  24'h00FF00,    "G only, white");
+        // Single channel
+        check(180,90,45, 1,0,0, {8'd180,8'd0, 8'd0 }, "R only");
+        check(180,90,45, 0,1,0, {8'd0,  8'd90,8'd0 }, "G only");
+        check(180,90,45, 0,0,1, {8'd0,  8'd0, 8'd45}, "B only");
 
-        $display("Channel Isolation: %0d error(s)", error_count);
-        $finish;
+        // Bypass (no channel selected = passthrough)
+        check(180,90,45, 0,0,0, {8'd180,8'd90,8'd45}, "bypass");
+
+        // Priority: R > G > B
+        check(180,90,45, 1,1,0, {8'd180,8'd0,8'd0}, "R+G → R wins");
+        check(180,90,45, 0,1,1, {8'd0,8'd90,8'd0},  "G+B → G wins");
+        check(180,90,45, 1,0,1, {8'd180,8'd0,8'd0}, "R+B → R wins");
+        check(180,90,45, 1,1,1, {8'd180,8'd0,8'd0}, "all → R wins");
+
+        // Edge values
+        check(  0,  0,  0, 1,0,0, 24'h000000, "R only black");
+        check(255,255,255, 0,1,0, 24'h00FF00, "G only white");
+        check(255,  0,255, 0,0,1, 24'h0000FF, "B only magenta");
+
+        // pvalid_out propagation
+        @(negedge clk); rgb_in={8'd10,8'd20,8'd30}; en_R=1; pixel_valid=0;
+        @(posedge clk); @(negedge clk);
+        if (pvalid_out!==1'b0) begin
+            $error("iso: pvalid_out should be 0"); errors++; end
+        else $display("[%0t] iso PASS: pvalid=0 propagated",$time);
+
+        $display("Channel Isolation: %0d error(s)",errors); $finish;
     end
 endmodule
