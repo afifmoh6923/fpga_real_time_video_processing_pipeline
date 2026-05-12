@@ -1,9 +1,6 @@
-///////////////////////////////////////////////////////////////////////////////
-// conv_filters.sv
-// ECE 385 Final Project – Real-Time FPGA Video Processing Pipeline
-//
+
 // Contains three convolution-based filter modules:
-//   1. sharpen     – strong unsharp mask (8-neighbour, 9× centre)
+//   1. silhoutte     – strong unsharp mask (8-neighbour, 9× centre)
 //   2. edge_detect – Sobel with true luma + threshold for crisp edges
 //   3. emboss      – directional emboss effect (NEW, SW[9])
 //   4. median_3x3  – noise reduction via median filter (NEW, SW[10])
@@ -14,25 +11,12 @@
 //
 // All use line_buffer.sv for 3-row neighbourhood access.
 // Pipeline depth: 2 clock cycles (matches original).
-///////////////////////////////////////////////////////////////////////////////
 
 
-///////////////////////////////////////////////////////////////////////////////
-// sharpen
-// FIXED: upgraded from weak 4-neighbour cross kernel (5× centre)
-//        to full 8-neighbour kernel (9× centre).
-//
-// Old kernel (weak):   New kernel (strong):
-//  [ 0 -1  0]           [-1 -1 -1]
-//  [-1  5 -1]           [-1  9 -1]
-//  [ 0 -1  0]           [-1 -1 -1]
-//
-// The 8-neighbour version subtracts all surrounding pixels so diagonal
-// edges are sharpened too, giving a much crisper result.
-// sharp_X = 9*centre - (all 8 neighbours summed)
-// Clamped to [0, 255]. Pipeline depth: 2 cycles.
-///////////////////////////////////////////////////////////////////////////////
-module sharpen (
+
+
+// silhoutte
+module silhoutte (
     input  logic        clk,
     input  logic        reset,
     input  logic        enable,
@@ -106,7 +90,7 @@ module sharpen (
     endfunction
 
     logic [23:0] rgb_d1, rgb_d2;
-    logic        pv_d1,  pv_d2;
+    logic pv_d1,  pv_d2;
     always_ff @(posedge clk) begin
         if (reset) begin
             rgb_out<=24'h0; pvalid_out<=1'b0;
@@ -125,22 +109,8 @@ module sharpen (
 endmodule
 
 
-///////////////////////////////////////////////////////////////////////////////
+
 // edge_detect
-// FIXED:
-//   1. True luma conversion (BT.601) before Sobel instead of green-only proxy.
-//      Y = (77*R + 150*G + 29*B) >> 8  — same coefficients as grayscale.sv
-//      This detects edges in all channels, not just where green dominates.
-//
-//   2. Magnitude scaling: raw Sobel mag is doubled before thresholding so
-//      weak edges become visible.
-//
-//   3. Hard threshold at 30 (after doubling): pixels above threshold → 255
-//      (white edge), below → 0 (black background).
-//      This gives crisp, clean white edges instead of a muddy grey gradient.
-//
-// Pipeline depth: 2 cycles.
-///////////////////////////////////////////////////////////////////////////////
 module edge_detect (
     input  logic        clk,
     input  logic        reset,
@@ -178,7 +148,7 @@ module edge_detect (
         end
     end
 
-    // NEW CLEAN LUMA: Weighs Red at 80% to avoid Green/Blue noise sparks
+    // Weighs Red at 80% to avoid Green/Blue noise sparks
     function automatic [7:0] clean_luma(input logic [23:0] px);
         logic [15:0] y;
         y = (8'd200 * px[23:16])  // 80% Red (Cleanest)
@@ -220,8 +190,8 @@ module edge_detect (
 endmodule
 
 
-///////////////////////////////////////////////////////////////////////////////
-// emboss  (NEW — SW[9])
+
+// emboss  
 // ─────────────────────────────────────────────────────────────────────────────
 // Creates a raised 3D relief effect by applying a directional gradient kernel:
 //
@@ -233,7 +203,6 @@ endmodule
 // Negative result → dark shadow; positive → bright highlight.
 // Output is grayscale (luma-based) to emphasise the relief effect.
 // Pipeline depth: 2 cycles.
-///////////////////////////////////////////////////////////////////////////////
 module emboss (
     input  logic        clk,
     input  logic        reset,

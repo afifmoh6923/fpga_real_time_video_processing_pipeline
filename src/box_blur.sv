@@ -44,9 +44,7 @@ module box_blur (
     output logic [23:0] rgb_out,
     output logic        pvalid_out
 );
-    // =========================================================================
-    // LINE BUFFER WIRES
-    // =========================================================================
+  
     logic [23:0] row0, row1, row2;   // three rows of the 3×3 window (centre col)
 
     line_buffer #(.WIDTH(320), .DATA_WIDTH(24)) lb (
@@ -76,35 +74,6 @@ module box_blur (
     logic [23:0] p_r1 [0:1];   // previous columns for row1
     logic [23:0] p_r2 [0:1];   // previous columns for row2
 
-    // =========================================================================
-    // PSEUDO-CODE:
-    //
-    // On every rising edge of clk when pixel_advance = 1:
-    //   Shift column registers:
-    //     p_r0[1] <= p_r0[0];   p_r0[0] <= row0;
-    //     p_r1[1] <= p_r1[0];   p_r1[0] <= row1;
-    //     p_r2[1] <= p_r2[0];   p_r2[0] <= row2;
-    //
-    // 3×3 window (all valid after 2 rows, 2 columns have been scanned):
-    //   p00=p_r0[1] p01=p_r0[0] p02=row0
-    //   p10=p_r1[1] p11=p_r1[0] p12=row1
-    //   p20=p_r2[1] p21=p_r2[0] p22=row2
-    //
-    // Per channel (R shown):
-    //   sum_R = p00_R + p01_R + p02_R
-    //         + p10_R + p11_R + p12_R
-    //         + p20_R + p21_R + p22_R
-    //   avg_R = (sum_R * 28) >> 8      // ≈ sum_R / 9
-    //   Clamp avg_R to 255 (overflow guard)
-    //
-    // if (enable):
-    //   rgb_out <= {avg_R[7:0], avg_G[7:0], avg_B[7:0]}
-    // else:
-    //   rgb_out <= rgb_in  (bypassed, registered to match pipeline depth)
-    //
-    // pvalid_out <= pixel_valid  (registered twice to match 2-cycle latency)
-    // =========================================================================
-
     // Column shift register update
     always_ff @(posedge clk) begin
         if (reset) begin
@@ -118,7 +87,7 @@ module box_blur (
         end
     end
 
-    // ── 3×3 window extraction (channel-split) ────────────────────────────────
+    
     // Red channel
     logic [7:0] p00R, p01R, p02R, p10R, p11R, p12R, p20R, p21R, p22R;
     assign {p00R, p01R, p02R} = {p_r0[1][23:16], p_r0[0][23:16], row0[23:16]};
@@ -137,21 +106,21 @@ module box_blur (
     assign {p10B, p11B, p12B} = {p_r1[1][7:0], p_r1[0][7:0], row1[7:0]};
     assign {p20B, p21B, p22B} = {p_r2[1][7:0], p_r2[0][7:0], row2[7:0]};
 
-    // ── Sum across 9 pixels per channel ──────────────────────────────────────
+    // Sum across 9 pixels per channel
     // Max sum = 255×9 = 2295, needs 12 bits
     logic [11:0] sum_R, sum_G, sum_B;
     assign sum_R = p00R + p01R + p02R + p10R + p11R + p12R + p20R + p21R + p22R;
     assign sum_G = p00G + p01G + p02G + p10G + p11G + p12G + p20G + p21G + p22G;
     assign sum_B = p00B + p01B + p02B + p10B + p11B + p12B + p20B + p21B + p22B;
 
-    // ── Divide by 9 using multiply-shift: (sum * 28) >> 8 ────────────────────
+    // Divide by 9 using multiply-shift: (sum * 28) >> 8 
     // sum_R[11:0] * 28 → max 2295*28=64260, fits in 16 bits
     logic [15:0] avg_R_raw, avg_G_raw, avg_B_raw;
     assign avg_R_raw = (sum_R * 5'd28) >> 8;
     assign avg_G_raw = (sum_G * 5'd28) >> 8;
     assign avg_B_raw = (sum_B * 5'd28) >> 8;
 
-    // ── Pipeline register + bypass delay ─────────────────────────────────────
+    // Pipeline register + bypass delay 
     // Also register rgb_in and pixel_valid twice to match 2-cycle depth
     logic [23:0] rgb_in_d1, rgb_in_d2;
     logic        pv_d1, pv_d2;

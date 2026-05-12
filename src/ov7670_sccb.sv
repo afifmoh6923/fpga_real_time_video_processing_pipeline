@@ -1,12 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
-// ov7670_sccb.sv
-// ECE 385 Final Project - Real-Time FPGA Video Processing Pipeline
-//
-// SCCB (Serial Camera Control Bus) BIT-BANG CONTROLLER
-// ?????????????????????????????????????????????????????????????????????????????
-// OmniVision SCCB is functionally identical to I2C write transactions.
-// No ACK bit is checked (SCCB uses a "don't care" bit instead).
-//
+
 // Protocol for a 3-phase write:
 //   1. START condition  : siod falls while sioc is HIGH
 //   2. Phase 1 (8 bits): Device write address = 0x42
@@ -16,7 +8,7 @@
 //   6. Phase 3 (8 bits): Register value
 //   7. Don't-care bit
 //   8. STOP condition   : siod rises while sioc is HIGH
-///////////////////////////////////////////////////////////////////////////////
+
 
 module ov7670_sccb (
     input  logic clk,           // ~24 MHz cam_clk_int

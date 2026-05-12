@@ -1,12 +1,12 @@
 
 module color_mapper (
-    input  logic [23:0] filtered_rgb,   // {R[7:0], G[7:0], B[7:0]} from text_overlay
-    input  logic        pixel_valid,    // HIGH = active video; drives vde
+    input  logic [23:0] filtered_rgb,   
+    input  logic        pixel_valid,    
 
     output logic [3:0]  red,
     output logic [3:0]  green,
     output logic [3:0]  blue,
-    output logic        vde             // Video Data Enable for HDMI IP
+    output logic        vde          
 );
     assign vde   = pixel_valid;
     assign red   = pixel_valid ? filtered_rgb[23:20] : 4'h0;

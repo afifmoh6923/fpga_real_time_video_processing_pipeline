@@ -1,32 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////
-// ov7670_init.sv
-// ECE 385 Final Project - Real-Time FPGA Video Processing Pipeline
-// OV7670 CAMERA CONFIGURATION SEQUENCER
-// ?????????????????????????????????????????????????????????????????????????????
-// On power-up (after reset_n de-asserts) this module:
-//   1. Waits ~50 ms for the camera to stabilise
-//   2. Issues a software reset (register 0x12 = 0x80)
-//   3. Waits ~2 ms for the reset to take effect
-//   4. Walks through the ROM table below, sending each {reg, val} pair
-//      via ov7670_sccb, pausing ~1 ms between writes
-//   5. Asserts config_done and stays there forever
-// Camera configured for:
-//   Resolution : QVGA 320
-//   Format     : RGB565
-//   Frame rate : ~30 fps  (24 MHz XCLK, no pre-scaler)
-//   PCLK       : free-running (toggles during blanking)
-// Register table built from:
-//   
-// Mike Field's Hamsterworks OV7670 Verilog project
-//   
-// westonb/OV7670-Verilog (GitHub)
-//   
-// Linux kernel ov7670.c driver register tables
-// Timing constants (all in cam_clk cycles, cam_clk ? 24 MHz):
-//   PWRUP_DELAY  = 1_200_000   (~50  ms)
-//   RESET_DELAY  =    48_000   (~ 2  ms)
-//   REG_DELAY    =    24_000   (~ 1  ms between consecutive writes)
-///////////////////////////////////////////////////////////////////////////////
+
 module ov7670_init (
     input  logic clk,           // ~24 MHz cam_clk_int
     input  logic reset_n,       // active-LOW reset
@@ -35,103 +7,11 @@ module ov7670_init (
     inout  wire  siod,
     output logic config_done
     );    // stays HIGH after all registers written
-    // =========================================================================
-    // TIMING PARAMETERS
-    // =========================================================================
+   
     localparam PWRUP_DELAY = 12_000_000;   // ~50 ms at 24 MHz
     localparam RESET_DELAY = 1_200_000;   // ~50 ms  at 24 MHz
     localparam REG_DELAY   =    72_000;   // ~1 ms  at 24 MHz
-    // =========================================================================
-    // REGISTER TABLE  (ROM)
-    // =========================================================================
-    // Stored as an array of {reg_addr[7:0], reg_data[7:0]} = 16-bit words.
-    // Sentinel value 16'hFFFF marks end of table.
-    //
-    // PSEUDO-CODE table (fill exact values from OV7670 datasheet / reference):
-    //
-    //   INDEX   REG     VALUE    DESCRIPTION
-    //   [0]     0x12    0x80     Software reset  ? sent alone with extra delay
-    //   [1]     0x12    0x04     COM7:  RGB mode, QVGA output
-    //   [2]     0x11    0x00     CLKRC: no pre-scaler (full 24 MHz)
-    //   [3]     0x0C    0x00     COM3:  enable scaling
-    //   [4]     0x3E    0x00     COM14: normal PCLK
-    //   [5]     0x70    0x3A     SCALING_XSC
-    //   [6]     0x71    0x35     SCALING_YSC
-    //   [7]     0x72    0x11     SCALING_DCWCTR  (QVGA = /2 in both dimensions)
-    //   [8]     0x73    0xF0     SCALING_PCLK_DIV
-    //   [9]     0xA2    0x02     SCALING_PCLK_DELAY
-    //   [10]    0x15    0x00     COM10: PCLK free-running
-    //   [11]    0x40    0xD0     COM15: RGB565 full output range [00..FF]
-    //   [12]    0x41    0x08     COM16: de-noise on
-    //   [13]    0x42    0x02     COM17: edge enhance on
-    //   [14]    0x1E    0x00     MVFP:  no mirror / flip
-    //   --- Color-matrix coefficients (critical for correct RGB565 colors) ---
-    //   [15]    0x4F    0x80     MTX1
-    //   [16]    0x50    0x80     MTX2
-    //   [17]    0x51    0x00     MTX3
-    //   [18]    0x52    0x22     MTX4
-    //   [19]    0x53    0x5E     MTX5
-    //   [20]    0x54    0x80     MTX6
-    //   [21]    0x58    0x9E     MTXS (sign + auto-contrast)
-    //   --- Gamma curve (improves perceived image quality) ---
-    //   [22]    0x7A    0x20     SLOP
-    //   [23]    0x7B    0x10     GAM1
-    //   [24]    0x7C    0x1E     GAM2
-    //   [25]    0x7D    0x35     GAM3
-    //   [26]    0x7E    0x5A     GAM4
-    //   [27]    0x7F    0x69     GAM5
-    //   [28]    0x80    0x76     GAM6
-    //   [29]    0x81    0x80     GAM7
-    //   [30]    0x82    0x88     GAM8
-    //   [31]    0x83    0x8F     GAM9
-    //   [32]    0x84    0x96     GAM10
-    //   [33]    0x85    0xA3     GAM11
-    //   [34]    0x86    0xAF     GAM12
-    //   [35]    0x87    0xC4     GAM13
-    //   [36]    0x88    0xD7     GAM14
-    //   [37]    0x89    0xE8     GAM15
-    //   --- AWB (auto white balance) ---
-    //   [38]    0x13    0xE0     COM8: AGC/AEC off initially, AWB on
-    //   [39]    0x00    0x00     GAIN
-    //   [40]    0x10    0x00     AECH
-    //   [41]    0x0D    0x40     COM4
-    //   [42]    0x14    0x18     COM9: max gain 4
-    //   [43]    0xA5    0x05     BD50MAX
-    //   [44]    0xAB    0x07     BD60MAX
-    //   [45]    0x24    0x95     AEW  (AWB stable region upper bound)
-    //   [46]    0x25    0x33     AEB  (AWB stable region lower bound)
-    //   [47]    0x26    0xE3     VPT
-    //   [48]    0x9F    0x78     HAECC1
-    //   [49]    0xA0    0x68     HAECC2
-    //   [50]    0xA1    0x0B     HAECC3 (reserved, keep at 0x0B)
-    //   [51]    0xA6    0xD8     HAECC3
-    //   [52]    0xA7    0xD8     HAECC4
-    //   [53]    0xA8    0xF0     HAECC5
-    //   [54]    0xA9    0x90     HAECC6
-    //   [55]    0xAA    0x94     HAECC7
-    //   [56]    0x13    0xE5     COM8: enable AGC, AEC, AWB fully
-    //   [57]    0x69    0x00     GFIX (gain fix off)
-    //   [58]    0x74    0x00     REG74 (digital gain off)
-    //   [59]    0xB0    0x84     RSVD (set as per reference)
-    //   [60]    0xB1    0x0C     ABLC1
-    //   [61]    0xB2    0x0E     RSVD
-    //   [62]    0xB3    0x80     THL_ST
-    //   [63]    0x59    0x88     AWBC7
-    //   [64]    0x5A    0x88     AWBC8
-    //   [65]    0x5B    0x44     AWBC9
-    //   [66]    0x5C    0x67     AWBC10
-    //   [67]    0x5D    0x49     AWBC11
-    //   [68]    0x5E    0x0E     AWBC12
-    //   [69]    0x6C    0x0A     AWBCTR3
-    //   [70]    0x6D    0x55     AWBCTR2
-    //   [71]    0x6E    0x11     AWBCTR1
-    //   [72]    0x6F    0x9F     AWBCTR0
-    //   [73]    0x55    0x00     BRIGHT (brightness = 0, neutral)
-    //   [74]    0x56    0x40     CONTRAS (contrast = 0x40, neutral)
-    //   [75]    0xFF    0xFF     ? END SENTINEL
-    //
-    // NOTE: Index [0] (soft-reset 0x12=0x80) is sent first with RESET_DELAY
-    //       before the remaining registers.  All others use REG_DELAY.
+    
     localparam ROM_DEPTH = 97;
     logic [15:0] message [0:ROM_DEPTH-1];
     // Initialise ROM  (synthesises as LUT/BRAM-based ROM in Vivado)
@@ -254,9 +134,7 @@ module ov7670_init (
         message[95] = 16'h7410; //Digit
         message[96] = 16'hFFFF; // END SENTINEL
     end
-    // =========================================================================
-    // STATE MACHINE
-    // =========================================================================
+  
     typedef enum logic [2:0] {
         PWRUP,      // wait for camera power-up stabilisation
         SW_RESET,   // send register 0x12 = 0x80 (software reset)
@@ -275,33 +153,7 @@ module ov7670_init (
     logic [7:0]   sccb_reg_data;
     logic         sccb_done;
     logic sccb_started;
-    // =========================================================================
-    // PSEUDO-CODE:
-    //
-    // PWRUP:
-    //   Count PWRUP_DELAY cycles.  When done ? SW_RESET.
-    //
-    // SW_RESET:
-    //   Pulse sccb_start=1 with reg_addr=0x12, reg_data=0x80.
-    //   Wait for sccb_done ? RST_WAIT.
-    //
-    // RST_WAIT:
-    //   Count RESET_DELAY cycles.  When done ? SEND_REG with rom_idx=1
-    //   (skip index 0 which was the reset command we already sent).
-    //
-    // SEND_REG:
-    //   If rom[rom_idx] == 16'hFFFF ? CONFIG_DONE.
-    //   Else extract reg_addr = rom[rom_idx][15:8]
-    //              reg_data  = rom[rom_idx][7:0]
-    //   Pulse sccb_start=1.  Wait for sccb_done ? REG_WAIT.
-    //
-    // REG_WAIT:
-    //   Count REG_DELAY cycles.
-    //   rom_idx++.  ? SEND_REG.
-    //
-    // CONFIG_DONE:
-    //   config_done = 1.  Stay here forever.
-    // =========================================================================
+    
     always_ff @(posedge clk or negedge reset_n) begin
         if (!reset_n) begin
             state       <= PWRUP;
@@ -397,9 +249,7 @@ module ov7670_init (
             endcase
         end
     end
-    // =========================================================================
-    // SCCB CONTROLLER INSTANTIATION
-    // =========================================================================
+    
     ov7670_sccb sccb_ctrl (
         .clk      (clk),
         .reset_n  (reset_n),
