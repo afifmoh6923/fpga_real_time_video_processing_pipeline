@@ -14,7 +14,7 @@ module ov7670_init (
     
     localparam ROM_DEPTH = 97;
     logic [15:0] message [0:ROM_DEPTH-1];
-    // Initialise ROM  (synthesises as LUT/BRAM-based ROM in Vivado)
+    // Initialise ROM  (synthesises as LUT/BRAM-based ROM in Vivado) (Inspired by Angelo Jacob Github)
     initial begin
         message[0]  = 16'h1280;  // COM7:    Software reset
         message[1]  = 16'h1204; // COM7:    Enable VGA and RGB mode (Bit 4 removed to disable QVGA!)
